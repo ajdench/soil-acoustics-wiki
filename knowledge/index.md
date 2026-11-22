@@ -4,7 +4,7 @@ okf_version: "0.2"
 
 # Soil Acoustics knowledge bundle
 
-Use these records to follow the evidence from a field observation to the claim it can support. The human wiki and the machine-readable records draw on the same sources.
+This bundle covers Soil Acoustics Ltd, its research origins, the meter, the evidence for its score and competing systems. The records below identify what supports each claim and where the evidence ends.
 
 ## Concepts
 

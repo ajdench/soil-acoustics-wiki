@@ -9,6 +9,8 @@ status: "stable"
 
 ## 2026-11-22
 
+- Revised the [overview](index.md) to answer the owner’s questions about Soil Acoustics, its history, product, scientific evidence and competition. Added a visible Search boundary and equal insets around the governing question. The selected navigation item uses a softer green from the same palette.
+
 - Added the initial review of Soil Acoustics Ltd, its meter, the published operating guide and website. Checked funding, filing, subscription and data-use claims against their respective primary records.
 - Compared research on soil fauna with the scope of the commercial score. Recorded weather, soil conditions and study design where they affect an acoustic result.
 - Added the [monitoring systems comparison](monitoring-systems.md), covering commercially available systems and field trials. Recorded the public purchase or access route for each option.

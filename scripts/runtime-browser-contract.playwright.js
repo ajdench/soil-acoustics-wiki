@@ -1,4 +1,5 @@
 import { inspectHeaderControls } from "./header-browser-contract.mjs";
+import { checkQuestionInsets } from "./governing-question-insets.mjs";
 
 export async function waitForDrawnGraphCanvas(frame, view, viewport, timeout = 15000) {
   const minimumOpaqueRatio = view === "2d" ? 0.1 : 0.95;
@@ -372,6 +373,9 @@ export default async (page, options = {}) => {
       }
     });
     const location = `${route} at ${viewportName} width`;
+    for (const callout of await page.locator(".md-typeset blockquote.governing-question").all()) {
+      await checkQuestionInsets(callout);
+    }
     check(metrics.count === expectedCount, `The governing-question route ${location} must expose ${expectedCount} governing-question marker${expectedCount === 1 ? "" : "s"}`);
     if (expectedQuestion !== null) {
       check(

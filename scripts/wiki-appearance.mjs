@@ -121,7 +121,7 @@ export function deriveAppearance(value) {
     border: readableTone(seed, 0.61, lightSurfaces, 3, -1, neutral),
     focus: lightAccents[1], focusContrast: "#ffffff",
     headerBackground: config.accent, headerText: brandInk,
-    selectedBackground: config.accent, selectedText: brandInk,
+    selectedBackground: pale, selectedText: lightAccents[1],
     questionBackground, questionText: lightAccents[0], questionBorder: lightAccents[0],
     tableHeader: questionBackground,
   };
@@ -140,7 +140,7 @@ export function deriveAppearance(value) {
     border: readableTone(seed, 0.62, darkSurfaces, 3, 1, neutral),
     focus: darkAccents[1], focusContrast: darkBackground,
     headerBackground: config.accent, headerText: brandInk,
-    selectedBackground: config.accent, selectedText: brandInk,
+    selectedBackground: darkQuestion, selectedText: darkAccents[1],
     questionBackground: darkQuestion, questionText: darkAccents[0], questionBorder: darkAccents[0],
     tableHeader: darkQuestion,
   };
@@ -171,6 +171,7 @@ export function deriveAppearance(value) {
     checkPair(palette.headerSelectedText, [palette.headerSelected], 4.5, `${name} selected header text`);
     checkPair(palette.headerHoverText, [palette.headerHover], 4.5, `${name} header hover text`);
     checkPair(palette.selectedText, [palette.selectedBackground], 4.5, `${name} selected text`);
+    checkPair(palette.accent, [palette.selectedBackground, palette.background, palette.surface], 3, `${name} navigation rail`);
     Object.freeze(palette);
   }
   return Object.freeze({ config, seed: Object.freeze(seed), light, dark });

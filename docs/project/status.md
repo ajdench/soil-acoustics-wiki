@@ -9,7 +9,7 @@ status: "stable"
 
 ## Current goal
 
-Help a land manager interpret a soil recording, understand what the Soil Acoustic Meter supplies and compare it with alternative ways to collect or analyse field data.
+Explain what Soil Acoustics does, who runs the company, how the meter developed and what a buyer receives. Assess the scientific evidence for its score and compare the service with competing ways to monitor soil life.
 
 ## Current state
 

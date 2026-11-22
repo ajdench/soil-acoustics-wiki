@@ -41,6 +41,7 @@ body[data-md-color-accent] {
   --diagram-node-radius: 5px;
   --component-border-width: 1px;
   --accent-rail-width: .3rem;
+  --governing-question-inset: .6rem;
   --source-row-rail-width: .25rem;
   --technical-frame-border-width: 1.75px;
   --diagram-emphasis-line-width: 3px;
@@ -92,8 +93,15 @@ body[data-md-color-accent] {
 .md-nav--primary .md-nav__item--active > .md-nav__link,
 .md-nav--primary .md-nav__item .md-nav__link--active,
 .md-nav--secondary .md-nav__link--active {
-  background-color: var(--accent-transparent);
+  background-color: var(--accent-lightest);
+  border-inline-start: 3px solid var(--accent);
   color: var(--accent-dark);
+  font-weight: 700;
+}
+
+:is(.md-nav--primary, .md-nav--secondary) .md-nav__link--active:hover .md-ellipsis {
+  text-decoration: underline;
+  text-underline-offset: .15em;
 }
 
 .md-header__button {
@@ -134,6 +142,12 @@ body[data-md-color-accent] {
 
 [dir="rtl"] .md-header__button:not(.md-logo)[for="__search"] > svg {
   transform: translate(-50%, -50%) scaleX(-1);
+}
+
+/* The closed Search control needs an edge against the brand in both palettes. */
+.md-search__button,
+.md-header__button[for="__search"] {
+  border: 2px solid var(--header-text);
 }
 
 .md-search__button::before {
@@ -208,9 +222,11 @@ body[data-md-color-accent] {
 
 .md-typeset blockquote.governing-question {
   border-inline-start-color: var(--accent);
+  padding: var(--governing-question-inset);
 }
 
 .md-typeset blockquote.governing-question > p {
+  margin: 0;
   color: var(--accent);
   font-weight: 700;
 }

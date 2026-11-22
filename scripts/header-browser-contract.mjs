@@ -40,6 +40,18 @@ export function assertNoColourTransition(style, label) {
   }
 }
 
+export function assertSearchBoundary(control, header, label) {
+  const surface = contrastRatio(control.background, header);
+  const borders = control.borders.map(border => (
+    border.width > 0 && border.style === "solid" && rgba(border.color)[3] === 1
+      ? contrastRatio(border.color, header) : 1
+  ));
+  assert.equal(borders.length, 4, `${label}: measure each Search border`);
+  const boundary = Math.max(surface, Math.min(...borders));
+  assert.ok(boundary >= 3, `${label}: Search boundary contrast against the adjacent header is ${boundary.toFixed(2)}:1 (requires 3:1)`);
+  return boundary;
+}
+
 export function assertHeaderSnapshot(snapshot, { scheme, state = "rest", label = scheme } = {}) {
   assert.ok(headerHover[scheme], `${label}: known appearance required`);
   assert.equal(snapshot.scheme, scheme, `${label}: active appearance differs`);
@@ -56,6 +68,7 @@ export function assertHeaderSnapshot(snapshot, { scheme, state = "rest", label =
     assert.equal(logo.boxShadow, "none", `${label}: logos must not have a control shadow`);
   }
   const textRatios = [], iconRatios = [];
+  let searchBoundaryContrast;
   for (const control of snapshot.controls) {
     const name = `${label}/${control.name}`;
     const expectedHeight = snapshot.rem * 1.6 * snapshot.zoom;
@@ -82,9 +95,16 @@ export function assertHeaderSnapshot(snapshot, { scheme, state = "rest", label =
       assert.equal(control.background, snapshot.tokens[selected ? "header-selected" : "header-control-surface"], `${name}: rest/selected semantic background`);
       assert.equal(control.foreground, snapshot.tokens[selected ? "header-selected-text" : "header-text"], `${name}: rest/selected semantic foreground`);
     }
+    if (control.kind === "search" || control.kind === "mobile-search") {
+      searchBoundaryContrast = assertSearchBoundary(control, snapshot.header.background, name);
+      for (const stroke of control.searchStrokes ?? []) {
+        assert.ok(contrastRatio(stroke, control.background) >= 3, `${name}: mobile Search magnifier stroke contrast`);
+      }
+    }
     if (control.searchParts) assertSearchParts(control.searchParts, control, snapshot.tokens, name);
   }
-  return { minimumTextContrast: textRatios.length ? Math.min(...textRatios) : null, minimumIconContrast: iconRatios.length ? Math.min(...iconRatios) : null };
+  assert.ok(searchBoundaryContrast, `${label}: visible Search action required`);
+  return { searchBoundaryContrast, minimumTextContrast: textRatios.length ? Math.min(...textRatios) : null, minimumIconContrast: iconRatios.length ? Math.min(...iconRatios) : null };
 }
 
 export function assertSearchParts(parts, control, tokens, label) {
@@ -114,12 +134,16 @@ export async function measureHeader(page) {
       const box = element.getBoundingClientRect(), style = getComputedStyle(element);
       const icon = element.querySelector(":scope > svg")?.getBoundingClientRect();
       const square = element.classList.contains("md-header__button");
-      const kind = element.classList.contains("layout-width-toggle") ? "width" : element.classList.contains("md-search__button") ? "search" : "icon";
+      const kind = element.classList.contains("layout-width-toggle") ? "width" : element.classList.contains("md-search__button") ? "search" : element.matches('label[for="__search"]') ? "mobile-search" : "icon";
       const before = getComputedStyle(element, "::before"), after = getComputedStyle(element, "::after");
       const text = kind === "width" ? element.querySelector(":scope > span")?.getBoundingClientRect() : null;
       const group = icon && text ? { left: Math.min(icon.left, text.left), right: Math.max(icon.right, text.right), top: Math.min(icon.top, text.top), bottom: Math.max(icon.bottom, text.bottom) } : null;
       return {
         name: element.getAttribute("aria-label") || element.title || element.textContent.trim() || element.getAttribute("for"),
+        borders: ["Top", "Right", "Bottom", "Left"].map(side => ({
+          width: parseFloat(style[`border${side}Width`]), style: style[`border${side}Style`], color: style[`border${side}Color`],
+        })),
+        searchStrokes: kind === "mobile-search" ? [...element.querySelectorAll("svg path, svg circle")].map(shape => getComputedStyle(shape).stroke) : null,
         kind, square, width: box.width, height: box.height, centreY: box.top + box.height / 2,
         radii: [style.borderTopLeftRadius, style.borderTopRightRadius, style.borderBottomRightRadius, style.borderBottomLeftRadius].map(parseFloat), background: style.backgroundColor, foreground: style.color,
         opacity: Number(style.opacity), transition: transition(style),
@@ -179,6 +203,10 @@ export async function inspectHeaderControls(page, { scheme, label = scheme, hove
       }
       samples.push(sample);
       await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+    }
+    if (await control.evaluate(element => element.matches('.md-search__button, label[for="__search"]'))) {
+      const hoverMetrics = assertHeaderSnapshot(await measureHeader(page), { scheme, label: `${label}/Search-hover`, state: "hover" });
+      samples.at(-1).searchBoundaryContrast = hoverMetrics.searchBoundaryContrast;
     }
     hovered.push(samples);
   }

@@ -34,7 +34,7 @@ A land manager entering the wiki can follow the overview to a field interpretati
 
 The project owner selected the exact brand seed `#32541c` on 22 November 2026. New readers start with the light palette and wide desktop layout. The reader may switch between dark and light or Standard and Wide. Preserve those preferences across reloads and navigation. On narrow screens, hide the width switch and retain its desktop setting.
 
-The pinned appearance generator derives contrast-adjusted colours for each surface from `config/wiki-appearance.json`. Renderer, Mermaid and both graph views use the matching generated roles. The full token manifest is `docs/assets/appearance/tokens.json`. The roles below support the reading and navigation paths.
+The appearance generator derives contrast-adjusted colours for each surface from `config/wiki-appearance.json`. Renderer, Mermaid and both graph views use the matching generated roles. The full token manifest is `docs/assets/appearance/tokens.json`. The roles below support the reading and navigation paths.
 
 | Role | Light | Dark |
 | --- | --- | --- |
@@ -44,6 +44,8 @@ The pinned appearance generator derives contrast-adjusted colours for each surfa
 | Active link and question | `#40632b` | `#a4cc8f` |
 | Visited link | `#496c34` | `#b1d99b` |
 | Light accent surface | `#ebf6e5` | `#262e22` |
+| Selected navigation fill | `#ebf6e5` | `#262e22` |
+| Selected navigation text | `#365820` | `#b7dfa2` |
 | Page | `#f8fbf7` | `#0f130e` |
 | Body text | `#1f231d` | `#e8ede5` |
 | Surface | `#ffffff` | `#1a1e19` |
@@ -54,11 +56,13 @@ The pinned appearance generator derives contrast-adjusted colours for each surfa
 | Hover text | `#29251f` | `#201c17` |
 | Accent overlay | `rgb(64 99 43 / 10%)` | `rgb(164 204 143 / 10%)` |
 
-Measure 4.5:1 or better for normal text and 3:1 or better for interactive boundaries and focus on their actual backgrounds. Keep search labels, keyboard shortcuts and focus visible in both appearances.
+Measure 4.5:1 or better for normal text and 3:1 or better for interactive boundaries and focus on their actual backgrounds. The closed Search control has a visible perimeter against the adjacent header at rest, on hover and on keyboard focus. Check the label and shortcut against the control fill separately. Check the compact Search icon and keyboard focus in both appearances.
 
 ## Reader components
 
-The marked `governing-question` block displays the subject question on the home page. Give its inline-start rail and text the active palette accent. Apply the same component to every verbatim repetition in its bounded reader set. Keep paraphrases, research quotations and source-register titles neutral.
+The rc.17 reference adapter uses the exact brand seed as the selected menu fill. The owner requested a lighter selection so an active link has less visual weight than the site header. The local adapter uses a soft accent fill, bold text and a 3px leading rail for the current page and section, including in the mobile menu. Its local fixture checks these roles. The header retains the exact brand seed.
+
+The marked `governing-question` block displays the subject question on the home page. Give its inline-start rail and text the active palette accent. Use one `.6rem` inset on all four sides, measured from the inner border edge to the paragraph box. The rail width is additional. Remove the paragraph margin so a wrapped question keeps the same inset above and below. Apply the same component to every verbatim repetition in its bounded reader set. Keep paraphrases, research quotations and source-register titles neutral.
 
 Use the governed numeric superscript links for registered citations. Each has its own focus target, accessible full source identity and exact register anchor. Preserve leading zeroes. Source URLs and licences belong in the register.
 

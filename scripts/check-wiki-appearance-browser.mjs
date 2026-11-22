@@ -446,6 +446,15 @@ async function inspectAppearance(page, accent, palette, viewportWidth) {
       const color = rgba(pseudo ? style.backgroundColor : style.color);
       return { color: color.slice(0, 3), background: background.slice(0, 3), ownBackground: style.backgroundColor, contrast: contrast(over(color, background), background) };
     };
+    const activeLink = document.querySelector(".md-nav--primary a.md-nav__link--active");
+    const activeStyle = getComputedStyle(activeLink);
+    const rail = rgba(activeStyle.borderInlineStartColor);
+    const selected = {
+      ...inspect(activeLink), railWidth: parseFloat(activeStyle.borderInlineStartWidth),
+      railStyle: activeStyle.borderInlineStartStyle, weight: Number(activeStyle.fontWeight),
+      railToFill: contrast(rail, effectiveBackground(activeLink)),
+      railToSurround: contrast(rail, effectiveBackground(activeLink.parentElement)),
+    };
     let tableScroller = document.querySelector(".md-typeset table");
     while (tableScroller && !["auto", "scroll"].includes(getComputedStyle(tableScroller).overflowX)) tableScroller = tableScroller.parentElement;
     if (!tableScroller) throw new Error("Fixture table has no horizontal scroll container");
@@ -462,7 +471,7 @@ async function inspectAppearance(page, accent, palette, viewportWidth) {
         .map(element => ({ label: element.getAttribute("aria-label") || element.getAttribute("title") || element.tagName, ...inspect(element) })),
       question: inspect("blockquote.governing-question p"),
       table: inspect(".md-typeset table th"),
-      selected: inspect(".md-nav--primary .md-nav__link--active"),
+      selected,
       link: inspect(".md-content p a"),
       documentWidth: document.documentElement.scrollWidth,
       viewportWidth: innerWidth,
@@ -472,7 +481,11 @@ async function inspectAppearance(page, accent, palette, viewportWidth) {
   report.lastObservation = snapshot;
   const rgb = hex => [1, 3, 5].map(offset => Number.parseInt(hex.slice(offset, offset + 2), 16));
   assert.deepEqual(snapshot.header.background, rgb(accent), "The supplied accent must be visibly present on the header");
-  assert.deepEqual(snapshot.selected.background, rgb(accent), "The supplied accent must be visibly present on selected navigation");
+  assert.deepEqual(snapshot.selected.background, rgb(palette.selectedBackground), "Selected navigation uses its palette surface");
+  assert.deepEqual(snapshot.selected.color, rgb(palette.selectedText));
+  assert.equal(snapshot.selected.railStyle, "solid");
+  assert(snapshot.selected.railWidth >= 3 && snapshot.selected.weight >= 600, "Selected navigation retains a shaped rail and bold label");
+  assert(snapshot.selected.railToFill >= 3 && snapshot.selected.railToSurround >= 3, "Navigation rail must contrast on both sides");
   assert.deepEqual(snapshot.question.background, rgb(palette.questionBackground));
   assert.deepEqual(snapshot.table.background, rgb(palette.tableHeader));
   for (const [role, result] of Object.entries(snapshot)) {

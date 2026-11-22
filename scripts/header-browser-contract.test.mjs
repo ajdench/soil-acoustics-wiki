@@ -14,7 +14,7 @@ function fixture() {
     controls: [
       { ...base, name: "appearance", kind: "icon", square: true, svg: { width: 18, height: 18, offsetX: 0, offsetY: 0 } },
       { ...base, name: "Wide", kind: "width", square: false, width: 70, background: tokens["header-selected"], group: { offsetX: 0, offsetY: 0 } },
-      { ...base, name: "Search", kind: "search", square: false, width: 180, searchParts: { icon: tokens["header-text"], shortcutForeground: tokens["header-text"], shortcutBackground: tokens["header-control-surface"], beforeTransition: stationary, afterTransition: stationary, rendered: { magnifier: rendered, shortcut: rendered } } },
+      { ...base, name: "Search", kind: "search", borders: Array.from({ length: 4 }, () => ({ width: 2, color: tokens["header-text"], style: "solid" })), square: false, width: 180, searchParts: { icon: tokens["header-text"], shortcutForeground: tokens["header-text"], shortcutBackground: tokens["header-control-surface"], beforeTransition: stationary, afterTransition: stationary, rendered: { magnifier: rendered, shortcut: rendered } } },
     ],
   };
 }
@@ -34,6 +34,9 @@ for (const [name, mutate, message] of [
   ["hidden keyboard stop", value => value.hiddenTabStops = 1, /tab order/],
   ["framed logo", value => value.logos[0].background = "rgb(255,255,255)", /unframed/],
   ["brand removed from header", value => value.header.background = "rgb(255,255,255)", /brand surface/],
+  ["missing Search boundary", value => { value.controls[2].borders.forEach(border => { border.width = 0; }); }, /Search boundary contrast/],
+  ["low-contrast mobile Search boundary", value => { value.controls[2].kind = "mobile-search"; value.controls[2].borders.forEach(border => { border.color = value.header.background; }); }, /Search boundary contrast/],
+  ["invisible mobile Search magnifier stroke", value => { value.controls[2].kind = "mobile-search"; value.controls[2].searchStrokes = [value.controls[2].background]; }, /magnifier stroke contrast/],
   ["unreadable Search magnifier", value => value.controls[2].searchParts.icon = value.controls[2].background, /magnifier/],
   ["unreadable Search shortcut", value => value.controls[2].searchParts.shortcutForeground = value.controls[2].background, /shortcut/],
   ["hidden Search magnifier", value => value.controls[2].searchParts.rendered.magnifier = { ...rendered, opacity: 0 }, /rendered and readable/],

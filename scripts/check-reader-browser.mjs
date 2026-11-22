@@ -5,6 +5,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { chromium, webkit } from "playwright";
 import { reviewEvidenceMode, reviewExamples } from "./public-review.mjs";
+import { checkQuestionInsets } from "./governing-question-insets.mjs";
 
 const reviewMode = reviewEvidenceMode(process.cwd());
 
@@ -29,6 +30,18 @@ try {
         const page = await browser.newPage({ viewport: { width, height: 900 } });
         const start = await page.goto(url);
         assert.equal(start.status(), 200);
+        const question = page.locator("article blockquote.governing-question");
+        const questionInsets = await checkQuestionInsets(question);
+        // Replay the unpadded callout and independent right-edge/paragraph regressions.
+        for (const defect of ["padding-block: 0", "padding-right: 0", "margin-top: 1em"]) {
+          const selector = defect.startsWith("margin") ? "blockquote.governing-question > p" : "blockquote.governing-question";
+          const override = await page.addStyleTag({ content: `${selector} { ${defect} !important; }` });
+          try {
+            await assert.rejects(() => checkQuestionInsets(question), /Question .* inset/);
+          } finally {
+            await override.evaluate(element => element.remove());
+          }
+        }
         await page.locator('article a[href*="monitoring-systems"]').first().click();
         await page.waitForURL("**/monitoring-systems/");
         const article = page.locator("article");
@@ -61,7 +74,7 @@ try {
           }
         }
         checks.push({
-          engine: name, width, route: "/monitoring-systems/", sourceRow: href.split("#")[1], reviewMode,
+          engine: name, width, questionInsets, route: "/monitoring-systems/", sourceRow: href.split("#")[1], reviewMode,
           reviewImages: reviewMode === "screenshots" ? reviewExamples.length : 0,
           reviewPublisherLinks: reviewMode === "publisher-links" ? reviewExamples.length : 0,
         });
