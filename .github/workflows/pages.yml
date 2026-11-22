@@ -34,6 +34,7 @@ jobs:
           require-checksums: true
       - run: npm ci
       - run: uv sync --frozen
+      - run: npm run check:consumer && npm run check:source-links
       - id: pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - name: Build the public site

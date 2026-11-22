@@ -24,4 +24,4 @@ To verify the migrated copy, run `npm run verify` in the wiki directory with the
 
 ## Public edition
 
-The [public repository](https://github.com/ajdench/soil-acoustics-wiki) begins with a source snapshot. The pre-migration history and the original screenshots remain in the local archive. The public website review links to the publisher’s pages. GitHub Actions builds [the published wiki](https://ajdench.github.io/soil-acoustics-wiki/) from the main branch, and the deployment record identifies the source commit. The local Standard Production receipt and the GitHub deployment have separate verification records.
+The public repository `ajdench/soil-acoustics-wiki` begins with a source snapshot. The pre-migration history and the original screenshots remain in the local archive. The public website review links to the publisher’s pages. GitHub Actions builds the published wiki from the main branch, and the deployment record identifies the source commit. The repository README links to the live site. The local Standard Production receipt and the GitHub deployment have separate verification records.
