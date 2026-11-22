@@ -1,0 +1,94 @@
+{
+  "$schema": "https://denchco.github.io/knowledge-base-wiki-documentation/schema/standard-stack-report-v1.json",
+  "schemaVersion": "1.0",
+  "operation": "resolve",
+  "selection": "latest-verified-immutable",
+  "observedAt": "2026-11-22T20:52:40.008Z",
+  "source": "https://github.com/denchco/knowledge-base-wiki-standard",
+  "readOnly": true,
+  "writesPerformed": false,
+  "currentVulnerabilityClearance": "not-checked",
+  "stack": {
+    "tag": "v0.1.0-rc.17",
+    "revision": "b781907eea212c4ddcbd64183997d0982d4caf40",
+    "release": {
+      "id": 454666805,
+      "tag": "v0.1.0-rc.17",
+      "publishedAt": "2026-11-22T18:45:53Z",
+      "url": "https://github.com/denchco/knowledge-base-wiki-standard/releases/tag/v0.1.0-rc.17",
+      "draft": false,
+      "immutable": true
+    },
+    "qualification": {
+      "workflowPath": ".github/workflows/verify.yml",
+      "workflowId": 326543467,
+      "runId": 45055693614,
+      "attempt": 1,
+      "event": "push",
+      "headBranch": "main",
+      "headSha": "b781907eea212c4ddcbd64183997d0982d4caf40",
+      "status": "completed",
+      "conclusion": "success",
+      "updatedAt": "2026-11-22T18:44:16Z",
+      "url": "https://github.com/denchco/knowledge-base-wiki-standard/actions/runs/45055693614"
+    },
+    "qualificationScope": "dated-release-verification",
+    "fileEvidenceScope": "selected-stack-files; full revision binds all release source",
+    "files": [
+      {
+        "path": "package.json",
+        "gitBlob": "3a2fd3dd334f4b1ecf037dcff6b4e05d2eec75f2",
+        "sha256": "78808e5534680c08924446e3a2350b4f5efa590a3524e11e9041dd056adc4bc2",
+        "bytes": 7535
+      },
+      {
+        "path": "package-lock.json",
+        "gitBlob": "def597f10fece3c5141b799c292a1cb24b6358b6",
+        "sha256": "e565fd0f5240d521ce0d0a0ce112a6b8987c218a327f5f04453ecfb3fe918601",
+        "bytes": 111839
+      },
+      {
+        "path": "pyproject.toml",
+        "gitBlob": "dad840a12c0a48fdc8764c69cbed02e36192fa13",
+        "sha256": "fc9a5e7414b44e704d0d35cb35860af7219c2e59a5a4bd468b981a360ddd7f0a",
+        "bytes": 472
+      },
+      {
+        "path": "uv.lock",
+        "gitBlob": "b44044efa81c9dff0fc891b3fb6b3c9dcf285bf8",
+        "sha256": "e924929d13480f0f650b2af5b64e53d98e358894f916ff60617c3f7213fddc1f",
+        "bytes": 225767
+      },
+      {
+        "path": ".node-version",
+        "gitBlob": "229b3ce85a631ccd5991b25f75f414171ccc7942",
+        "sha256": "584f19ccde29925286e32f566a2aa06c89efb4e2eb2bb2fc9ea5d56e2d190ac4",
+        "bytes": 8
+      },
+      {
+        "path": ".python-version",
+        "gitBlob": "5580b3d6526d8d340e22fc245364ae465747574a",
+        "sha256": "a05e0074505ce29f25abf3aebe4f7218d28e98411822f199e3272740be4e363c",
+        "bytes": 8
+      },
+      {
+        "path": "zensical.toml",
+        "gitBlob": "81a9cd92cb7901894da58f47eea284deec8b9e0d",
+        "sha256": "e6a5478c838222f92696a9ca14fa19266d982dcd8239bc628292e8dabb4c5cca",
+        "bytes": 3744
+      },
+      {
+        "path": ".wiki-standard.yaml",
+        "gitBlob": "ebfde6f596345bd35692331302cebc40af3995db",
+        "sha256": "b6f10978ca58347c57c062a03923ceeea494f400360fcf40100bcc0db59d07d3",
+        "bytes": 1470
+      },
+      {
+        "path": ".github/workflows/verify.yml",
+        "gitBlob": "be7ab3d17592c6417c68c4ee99e2cbe0ebb9286d",
+        "sha256": "a91ce5121c1a90f734a4ea1856e8e5f91a2545d39142d59a9a5d71c6aeab1883",
+        "bytes": 1373
+      }
+    ]
+  }
+}

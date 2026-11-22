@@ -1,0 +1,24 @@
+id: standard-production
+version: "0.1.0-candidate"
+extends:
+  - human-and-agent
+requires:
+  - DKBWS-GRAPH-001
+  - DKBWS-DESIGN-001
+  - DKBWS-DESIGN-002
+  - DKBWS-RENDER-001
+  - DKBWS-PROV-001
+  - DKBWS-VERIFY-001
+  - DKBWS-VERIFY-002
+  - DKBWS-RUNTIME-001
+  - DKBWS-RUNTIME-002
+  - DKBWS-UPDATE-001
+  - DKBWS-UPDATE-002
+capabilities:
+  human_renderer: zensical
+  graphify: required
+  local_browser_runtimes: required
+  browser_verification: required
+  local_service: required
+  jujutsu: required
+  standard_change_intake: required

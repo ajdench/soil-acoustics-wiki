@@ -1,0 +1,18 @@
+id: human-and-agent
+version: "0.1.0-candidate"
+extends:
+  - evidence-governed
+requires:
+  - DKBWS-HUMAN-001
+  - DKBWS-HUMAN-002
+  - DKBWS-HUMAN-004
+  - DKBWS-LLM-001
+  - DKBWS-LINK-001
+  - DKBWS-LINK-002
+  - DKBWS-PROMPT-001
+  - DKBWS-PROMPT-002
+capabilities:
+  human_wiki: required
+  source_citation_style: numeric-superscript
+  llm_wiki: required
+  development_response_links: live-wiki

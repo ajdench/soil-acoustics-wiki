@@ -1,0 +1,15 @@
+# Keep the research graph focused on the maintained soil evidence and reader pages.
+# The publisher adds the governed schema and navigation layers separately.
+scripts/
+tools/
+fixtures/
+profiles/
+schema/
+overrides/
+config/
+standard-proposals/
+docs/assets/
+package.json
+package-lock.json
+uv.lock
+pyproject.toml

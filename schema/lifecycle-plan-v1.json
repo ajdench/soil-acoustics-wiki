@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://denchco.github.io/knowledge-base-wiki-documentation/schema/lifecycle-plan-v1.json",
+  "title": "DenchCo read-only lifecycle result",
+  "type": "object",
+  "required": ["$schema", "planVersion", "kind", "readOnly", "writesPerformed", "target", "candidate", "summary"],
+  "properties": {
+    "$schema": { "const": "https://denchco.github.io/knowledge-base-wiki-documentation/schema/lifecycle-plan-v1.json" },
+    "planVersion": { "const": "1.0" },
+    "kind": { "enum": ["lifecycle-diff", "upgrade-plan", "init-plan"] },
+    "readOnly": { "const": true },
+    "writesPerformed": { "const": false },
+    "dryRun": { "const": true },
+    "applySupported": { "const": false },
+    "target": { "type": "string" },
+    "evaluationDate": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "candidate": {
+      "type": "object",
+      "required": ["standard", "selection"],
+      "properties": {
+        "standard": {
+          "type": "object",
+          "required": ["revision"],
+          "properties": { "revision": { "type": "string", "pattern": "^[a-f0-9]{40}(?:[a-f0-9]{24})?$" } }
+        },
+        "selection": { "$ref": "#/$defs/selection" }
+      }
+    },
+    "consumer": { "type": "object" },
+    "requirements": { "type": "array" },
+    "changes": { "type": "array", "items": { "$ref": "#/$defs/change" } },
+    "inspection": { "type": "object" },
+    "patchPlan": { "type": "object" },
+    "manualActions": { "type": "array", "items": { "$ref": "#/$defs/change" } },
+    "verificationPlan": { "type": "array", "items": { "type": "string" } },
+    "sourceDiff": { "type": "object" },
+    "targetState": { "type": "object" },
+    "input": { "type": "object" },
+    "proposedManifest": { "type": "object" },
+    "layout": { "type": "array" },
+    "stages": { "type": "array" },
+    "unresolvedInputs": { "type": "array", "items": { "type": "string" } },
+    "automaticResolutions": { "type": "array", "items": { "type": "string" } },
+    "clarificationProtocol": { "type": "object" },
+    "safety": { "type": "object" },
+    "summary": { "type": "object" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "lifecycle-diff" } } },
+      "then": { "required": ["consumer", "requirements", "changes", "inspection"] }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "upgrade-plan" } } },
+      "then": { "required": ["dryRun", "applySupported", "consumer", "patchPlan", "manualActions", "verificationPlan", "sourceDiff"] }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "init-plan" } } },
+      "then": { "required": ["dryRun", "applySupported", "targetState", "input", "proposedManifest", "layout", "stages", "unresolvedInputs", "automaticResolutions", "clarificationProtocol", "safety"] }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "selection": {
+      "type": "object",
+      "required": ["mode", "revision", "releaseTag", "bootstrapEligible", "currentVulnerabilityClearance", "evidence"],
+      "properties": {
+        "mode": { "enum": ["latest-verified-immutable", "explicit-unverified"] },
+        "revision": { "type": "string", "pattern": "^[a-f0-9]{40}(?:[a-f0-9]{24})?$" },
+        "releaseTag": { "type": ["string", "null"] },
+        "bootstrapEligible": { "type": "boolean" },
+        "currentVulnerabilityClearance": { "const": "not-checked" },
+        "evidence": { "type": ["object", "null"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "mode": { "const": "latest-verified-immutable" } } },
+          "then": {
+            "properties": {
+              "releaseTag": { "type": "string", "pattern": "^v?[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$" },
+              "bootstrapEligible": { "const": true },
+              "evidence": {
+                "type": "object",
+                "$ref": "standard-stack-report-v1.json",
+                "properties": { "operation": { "const": "resolve" } }
+              }
+            }
+          },
+          "else": { "properties": { "bootstrapEligible": { "const": false }, "evidence": { "type": "null" } } }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "change": {
+      "type": "object",
+      "required": ["id", "kind", "path", "current", "proposed", "reason", "automatic", "blocking"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["create", "replace", "manual"] },
+        "path": { "type": "string" },
+        "current": {},
+        "proposed": {},
+        "reason": { "type": "string", "minLength": 1 },
+        "automatic": { "type": "boolean" },
+        "blocking": { "type": "boolean" },
+        "requirement": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

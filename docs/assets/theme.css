@@ -1,0 +1,552 @@
+/* Deterministic content tokens. Zensical continues to own renderer chrome. */
+
+:root,
+body[data-md-color-primary],
+body[data-md-color-accent] {
+  --primary: #003f69;
+  --accent: #004d80;
+  --accent-dark: #003f69;
+  --accent-darker: #003452;
+  --accent-visited: #00436f;
+  --accent-light: #4d83a7;
+  --accent-lightest: #d9e7f0;
+  --accent-transparent: rgb(0 77 128 / 10%);
+  --accent-transparent-strong: rgb(0 77 128 / 16%);
+  --accent-contrast: #ffffff;
+  --background: #ffffff;
+  --surface: #ffffff;
+  --logo-surface: #ffffff;
+  --text: #1f2933;
+  --muted: #52606d;
+  --border: #aab7c0;
+  --focus: #003f69;
+  --focus-contrast: #ffffff;
+  --header-surface: var(--surface);
+  --header-text: var(--text);
+  --header-control-surface: #edf2f5;
+  --header-hover: #aaa08d;
+  --header-hover-text: #29251f;
+  --header-selected: #d9e7f0;
+  --header-selected-text: var(--header-text);
+  --header-control-height: 1.6rem;
+  --header-control-radius: .4rem;
+  --conditional: #a15c00;
+  --conditional-transparent: rgb(161 92 0 / 10%);
+  --success: #007f3b;
+  --success-transparent: rgb(0 127 59 / 10%);
+  --warning: #d5281b;
+  --component-radius: .35rem;
+  --component-radius-small: .2rem;
+  --component-radius-large: .5rem;
+  --diagram-node-radius: 5px;
+  --component-border-width: 1px;
+  --accent-rail-width: .3rem;
+  --source-row-rail-width: .25rem;
+  --technical-frame-border-width: 1.75px;
+  --diagram-emphasis-line-width: 3px;
+  --diagram-label-mask-width: 4px;
+  --list-marker-indent: 1.2rem;
+  --list-marker-size: 1em;
+  --compact-data-font-size: .64rem;
+  --diagram-text-size: var(--compact-data-font-size);
+  --sequential-menu-rail-width: 1.5px;
+
+  /* Material-compatible aliases consumed by the stock Zensical renderer. */
+  --md-primary-fg-color: var(--primary);
+  --md-primary-fg-color--light: var(--accent-light);
+  --md-primary-fg-color--dark: var(--accent-dark);
+  --md-primary-bg-color: var(--accent-contrast);
+  --md-primary-bg-color--light: rgb(255 255 255 / 70%);
+  --md-accent-fg-color: var(--accent);
+  --md-accent-fg-color--transparent: var(--accent-transparent);
+  --md-accent-bg-color: var(--accent-contrast);
+  --md-accent-bg-color--light: rgb(255 255 255 / 70%);
+  --md-typeset-a-color: var(--accent);
+  --md-code-hl-color: var(--accent);
+  --md-code-hl-color--light: var(--accent-transparent);
+}
+
+.md-typeset a {
+  color: var(--accent);
+  text-underline-offset: .13em;
+}
+
+.md-typeset a:visited {
+  color: var(--accent-visited);
+}
+
+.md-typeset a:hover {
+  color: var(--accent-dark);
+}
+
+.md-typeset a:active {
+  color: var(--accent-darker);
+}
+
+.md-nav--primary .md-nav__link:is([href], [for]):hover:not(.md-nav__link--active),
+.md-nav--secondary .md-nav__link:is([href], [for]):hover:not(.md-nav__link--active) {
+  background-color: var(--accent-transparent);
+  color: var(--accent-dark);
+}
+
+.md-nav--primary .md-nav__item--active > .md-nav__link,
+.md-nav--primary .md-nav__item .md-nav__link--active,
+.md-nav--secondary .md-nav__link--active {
+  background-color: var(--accent-transparent);
+  color: var(--accent-dark);
+}
+
+.md-header__button {
+  color: var(--header-text);
+}
+
+.md-header {
+  --focus: var(--header-text);
+  --focus-contrast: var(--header-surface);
+  background-color: var(--header-surface);
+  color: var(--header-text);
+}
+
+.md-search__button,
+.md-header__button:not(.md-logo) {
+  background-color: var(--header-control-surface);
+  border-radius: var(--header-control-radius);
+  box-sizing: border-box;
+  color: var(--header-text);
+  height: var(--header-control-height);
+  opacity: 1;
+  transition: none;
+}
+
+.md-header__button:not(.md-logo) {
+  padding: 0;
+  position: relative;
+  width: var(--header-control-height);
+}
+
+/* Keep native label visibility; centre the artwork, not its line box. */
+.md-header__button:not(.md-logo) > svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+[dir="rtl"] .md-header__button:not(.md-logo)[for="__search"] > svg {
+  transform: translate(-50%, -50%) scaleX(-1);
+}
+
+.md-search__button::before {
+  background-color: currentColor;
+  transition: none;
+}
+
+.md-search__button::after {
+  background-color: var(--header-control-surface);
+  color: var(--header-text);
+  opacity: 1;
+  transition: none;
+}
+
+.md-header__button:not(.md-logo):is(:hover, :focus-visible),
+.md-search__button:is(:hover, :focus) {
+  background-color: var(--header-hover);
+  color: var(--header-hover-text);
+}
+
+.md-header__button:not(.md-logo):active,
+.md-search__button:active {
+  background-color: var(--header-selected);
+  color: var(--header-selected-text);
+}
+
+.md-tabs__item--active {
+  border-color: var(--accent);
+}
+
+.md-tabs__item--active .md-tabs__link,
+.md-tabs__link:hover {
+  color: var(--accent-dark);
+}
+
+.md-typeset .tabbed-labels {
+  --md-default-fg-color: var(--accent-dark);
+}
+
+.js .md-typeset .tabbed-labels::before {
+  background-color: var(--accent);
+}
+
+.md-typeset .tabbed-labels > label:hover,
+.md-typeset a.md-tag[href]:hover {
+  background-color: var(--accent-transparent);
+  color: var(--accent-dark);
+}
+
+.md-typeset .md-button--primary {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.md-typeset .md-button--primary:hover,
+.md-typeset .md-button--primary:active {
+  background-color: var(--accent-dark);
+  border-color: var(--accent-dark);
+  color: var(--accent-contrast);
+  opacity: 1;
+}
+
+.md-typeset .md-button:not(.md-button--primary):hover {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+
+.md-typeset :is(input[type="checkbox"], input[type="radio"], select) {
+  accent-color: var(--accent);
+}
+
+.md-typeset blockquote.governing-question {
+  border-inline-start-color: var(--accent);
+}
+
+.md-typeset blockquote.governing-question > p {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.md-typeset .admonition.note,
+.md-typeset details.note {
+  background-color: var(--accent-transparent);
+}
+
+.md-typeset .admonition.note > .admonition-title::before,
+.md-typeset details.note > summary::before {
+  background-color: var(--accent);
+}
+
+.md-typeset .md-input:hover,
+.md-typeset .md-input:focus {
+  border-color: var(--accent);
+}
+
+.md-typeset a:is(:focus-visible, .focus-visible),
+.md-typeset button:is(:focus-visible, .focus-visible),
+.md-typeset input:is(:focus-visible, .focus-visible),
+.md-typeset select:is(:focus-visible, .focus-visible),
+.md-nav__link:is(:focus-visible, .focus-visible),
+.md-header__button:is(:focus-visible, .focus-visible),
+.md-search__button:is(:focus-visible, .focus-visible),
+.md-tabs__link:is(:focus-visible, .focus-visible),
+.md-select__link:is(:focus-visible, .focus-visible),
+input.md-option:is(:focus-visible, .focus-visible) + label,
+.layout-width-toggle:is(:focus-visible, .focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 1px var(--focus-contrast);
+}
+
+.md-typeset .requirement-tier {
+  border: var(--component-border-width) solid var(--border);
+  border-left: var(--accent-rail-width) solid var(--accent);
+  border-radius: var(--component-radius);
+  background: var(--accent-transparent);
+  margin: 1rem 0;
+  padding: .85rem 1rem;
+}
+
+.md-typeset .requirement-tier h3 {
+  color: var(--primary);
+  margin: 0 0 .35rem;
+}
+
+.md-typeset .tier-envelope {
+  background: var(--conditional-transparent);
+  border-left-color: var(--conditional);
+}
+
+.md-typeset .tier-envelope h3 {
+  color: var(--conditional);
+}
+
+.md-typeset .tier-ceiling {
+  background: var(--success-transparent);
+  border-left-color: var(--success);
+}
+
+.md-typeset .tier-ceiling h3 {
+  color: var(--success);
+}
+
+.md-typeset .status-pill {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: .75rem;
+  font-weight: 700;
+  line-height: 1.35;
+  padding: .12rem .45rem;
+}
+
+.md-typeset table {
+  border: var(--component-border-width) solid var(--border);
+  border-radius: var(--component-radius);
+  font-size: var(--compact-data-font-size);
+}
+
+.md-typeset ul:not(.task-list) {
+  list-style-type: square;
+  margin-inline-start: 0;
+  padding-inline-start: var(--list-marker-indent);
+}
+
+.md-typeset ul:not(.task-list) > li {
+  margin-inline-start: 0;
+}
+
+.md-typeset ul:not(.task-list) > li::marker {
+  color: var(--text);
+  font-size: var(--list-marker-size);
+}
+
+.md-nav--secondary .md-nav__list {
+  border-inline-start: var(--sequential-menu-rail-width) solid var(--border);
+}
+
+.md-nav--secondary .md-nav__link {
+  color: var(--muted);
+}
+
+.md-nav--secondary .md-nav__link--active {
+  color: var(--accent-dark);
+  font-weight: 700;
+}
+
+.md-typeset table tr:target {
+  background: var(--accent-lightest);
+  box-shadow: inset var(--source-row-rail-width) 0 0 var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.md-typeset table tr:has(span:target) {
+  background: var(--accent-lightest);
+  box-shadow: inset var(--source-row-rail-width) 0 0 var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.md-typeset table tr:target a,
+.md-typeset table tr:has(span:target) a {
+  color: var(--accent-dark);
+}
+
+.md-typeset table tr:target a:hover,
+.md-typeset table tr:has(span:target) a:hover {
+  color: var(--accent-darker);
+}
+
+.md-typeset__table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.md-typeset .mermaid {
+  border: 0;
+  background: transparent;
+  display: grid;
+  justify-items: safe center;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding: 0;
+}
+
+.md-typeset .mermaid .node rect,
+.md-typeset .mermaid .node polygon {
+  rx: var(--diagram-node-radius);
+  ry: var(--diagram-node-radius);
+  fill: var(--accent-lightest) !important;
+  stroke: var(--accent) !important;
+}
+
+.md-typeset .mermaid .edgePath path,
+.md-typeset .mermaid .flowchart-link,
+.md-typeset .mermaid .messageLine0,
+.md-typeset .mermaid .messageLine1 {
+  stroke: var(--accent) !important;
+}
+
+.md-typeset .mermaid .edge-thickness-thick {
+  stroke-width: var(--diagram-emphasis-line-width) !important;
+}
+
+.md-typeset .mermaid .edge-pattern-dotted {
+  stroke: var(--accent-light) !important;
+}
+
+.md-typeset .mermaid marker path,
+.md-typeset .mermaid .arrowheadPath {
+  fill: var(--accent) !important;
+  stroke: var(--accent) !important;
+}
+
+.md-typeset .mermaid .cluster rect {
+  fill: var(--accent-transparent) !important;
+  stroke: var(--accent-light) !important;
+  rx: var(--component-radius-large);
+  ry: var(--component-radius-large);
+}
+
+.md-typeset .mermaid .cluster-label text {
+  fill: var(--accent-dark) !important;
+  font-weight: 700 !important;
+  paint-order: stroke !important;
+  stroke: var(--background) !important;
+  stroke-linejoin: round !important;
+  stroke-width: var(--diagram-label-mask-width) !important;
+}
+
+.md-typeset .mermaid .node.kb-source :is(rect, polygon, circle, ellipse, path) {
+  fill: var(--surface) !important;
+  stroke: var(--accent-light) !important;
+}
+
+.md-typeset .mermaid .node:is(.kb-evidence, .kb-product) :is(rect, polygon, circle, ellipse, path) {
+  fill: var(--accent-lightest) !important;
+  stroke: var(--accent) !important;
+}
+
+.md-typeset .mermaid .node.kb-snapshot :is(rect, polygon, circle, ellipse, path) {
+  fill: var(--accent-transparent-strong) !important;
+  stroke: var(--accent) !important;
+}
+
+.md-typeset .mermaid .node:is(.kb-normative, .kb-canonical) :is(rect, polygon, circle, ellipse, path) {
+  fill: var(--accent) !important;
+  stroke: var(--accent-darker) !important;
+}
+
+.md-typeset .mermaid .node.kb-derived :is(rect, polygon, circle, ellipse, path) {
+  fill: var(--surface) !important;
+  stroke: var(--accent-light) !important;
+  stroke-dasharray: 4 3 !important;
+}
+
+.md-typeset .mermaid .node.kb-consumer :is(rect, polygon, circle, ellipse, path) {
+  fill: var(--surface) !important;
+  stroke: var(--accent-dark) !important;
+}
+
+.md-typeset .mermaid .node.kb-verification :is(rect, polygon, circle, ellipse, path) {
+  fill: var(--accent-dark) !important;
+  stroke: var(--accent-darker) !important;
+}
+
+.md-typeset .mermaid .node:is(.kb-normative, .kb-canonical, .kb-verification) :is(.nodeLabel, .label, text) {
+  color: var(--accent-contrast) !important;
+  fill: var(--accent-contrast) !important;
+  font-weight: 700 !important;
+}
+
+.md-typeset .mermaid .nodeLabel,
+.md-typeset .mermaid .edgeLabel,
+.md-typeset .mermaid .label,
+.md-typeset .mermaid text {
+  color: var(--text) !important;
+  fill: var(--text) !important;
+  font-size: var(--diagram-text-size) !important;
+}
+
+.md-typeset .mermaid foreignObject,
+.md-typeset .mermaid foreignObject div,
+.md-typeset .mermaid foreignObject span,
+.md-typeset .mermaid foreignObject p {
+  font-size: var(--diagram-text-size) !important;
+  line-height: 1.2 !important;
+}
+
+.md-typeset .mermaid .note {
+  fill: #fff4e5 !important;
+  stroke: #8a4b00 !important;
+}
+
+.md-typeset .mermaid .activation0,
+.md-typeset .mermaid .activation1,
+.md-typeset .mermaid .activation2 {
+  fill: var(--accent-lightest) !important;
+  stroke: var(--accent) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-typeset *,
+  .layout-width-toggle {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* Both native Zensical palettes resolve the same semantic colour roles. */
+:root,
+body[data-md-color-scheme] {
+  color-scheme: light;
+  --md-default-bg-color: var(--background);
+  --md-default-fg-color: var(--text);
+  --md-default-fg-color--light: var(--muted);
+  --md-default-fg-color--lighter: var(--border);
+  --md-default-fg-color--lightest: rgba(0, 0, 0, 0.05);
+  --md-code-fg-color: var(--text);
+  --md-code-bg-color: var(--surface);
+  --md-typeset-color: var(--text);
+  --md-typeset-table-color: var(--border);
+  --md-typeset-table-color--light: var(--surface);
+}
+
+body[data-md-color-scheme="slate"] {
+  color-scheme: dark;
+  --primary: #d0e8ff;
+  --accent: #83c4ff;
+  --accent-dark: #abd6ff;
+  --accent-darker: #d0e8ff;
+  --accent-visited: #9ed0ff;
+  --accent-light: #6aabe4;
+  --accent-lightest: #212d37;
+  --accent-transparent: rgb(131 196 255 / 10%);
+  --accent-transparent-strong: rgb(131 196 255 / 16%);
+  --accent-contrast: #111a1e;
+  --background: #111a1e;
+  --surface: #18242a;
+  --text: #e5eef1;
+  --muted: #b5c2c9;
+  --border: #798f9a;
+  --focus: #abd6ff;
+  --focus-contrast: #111a1e;
+  --header-control-surface: #293740;
+  --header-hover: #948774;
+  --header-hover-text: #201c17;
+  --header-selected: #344854;
+  --conditional: #edbc74;
+  --success: #90d7aa;
+  --warning: #ffa69e;
+  --md-default-fg-color--lightest: rgba(255, 255, 255, 0.06);
+}
+
+/* Logos retain their artwork without a control frame in either appearance. */
+.md-header__button.md-logo,
+.md-logo img {
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body { background: var(--background); color: var(--text); }
+
+/* Keep the native radio/label control available when Wide is hidden. */
+.md-header__option[data-md-component="palette"] {
+  flex: 0 0 auto;
+}
+
+@media print {
+  .md-header__option[data-md-component="palette"] {
+    display: none !important;
+  }
+}

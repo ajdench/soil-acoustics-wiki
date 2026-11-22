@@ -1,0 +1,18 @@
+/* Production content accents, scoped away from Zensical's runtime chrome. */
+
+.md-typeset table thead th {
+  background-color: var(--md-accent-fg-color--transparent);
+  color: var(--md-default-fg-color);
+}
+
+/* Stable source identities render as independent numeric superscript links. */
+.md-typeset .source-citations {
+  font-size: .75em;
+  font-weight: 600;
+  line-height: 0;
+  vertical-align: super;
+  white-space: nowrap;
+}
+.md-typeset .source-citations a:not(:hover) { text-decoration: none; }
+.md-typeset .source-citations a::before,
+.md-typeset .source-citations a::after { content: none; }

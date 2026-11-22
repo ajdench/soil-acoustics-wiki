@@ -1,0 +1,40 @@
+schema: "https://denchco.github.io/knowledge-base-wiki-documentation/schema/manifest-v1.json"
+standard:
+  name: "DenchCo Knowledge Base Wiki Standard"
+  version: "0.1.0-candidate"
+  source: "https://github.com/denchco/knowledge-base-wiki-standard"
+  revision: "b781907eea212c4ddcbd64183997d0982d4caf40"
+profile: "standard-production"
+okf_version: "0.2"
+roles:
+  okf_bundle: "knowledge"
+  source_register: "docs/sources.md"
+  evidence_matrix: "docs/evidence-matrix.md"
+  validation_queue: "docs/validation-queue.md"
+  research_log: "docs/log.md"
+  human_wiki: "docs/index.md"
+  governing_question: "docs/index.md"
+  llm_wiki: "docs/llm-wiki/index.md"
+  design_contract: "DESIGN.md"
+  authoring_policy: "AUTHORING.md"
+capabilities:
+  evidence_governance: true
+  human_wiki: true
+  source_citation_style: "numeric-superscript"
+  governing_question:
+    reader_sources: ["docs/index.md", "docs/company-and-product.md", "docs/research-evidence.md", "docs/website-review.md", "docs/monitoring-systems.md"]
+  llm_wiki: true
+  development_response_links: "live-wiki"
+  standard_change_intake: true
+  human_wiki_url: "http://127.0.0.1:8036/"
+  local_service: "macos-launchd"
+  deployment: "github-pages"
+  standard_release_tag: "v0.1.0-rc.17"
+  human_renderer: "zensical"
+  llm_artifacts: true
+  graphify: true
+  okf_export: true
+  local_browser_runtimes: true
+  browser_verification: true
+  jujutsu: true
+deviations: []

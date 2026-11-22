@@ -1,0 +1,84 @@
+# Agent Instructions for Soil Acoustics
+
+## Read order
+
+1. `.wiki-standard.yaml`
+2. `knowledge/index.md`
+3. `docs/llm-wiki/index.md`
+4. `docs/project/status.md`
+5. The manifest's `roles.authoring_policy` path, or `AUTHORING.md` when no path is mapped, before writing new original English prose
+6. `DESIGN.md` for rendered changes
+7. Graphify query results when `graphify-out/graph.json` exists
+
+<!-- DKBWS-PROMPT-001-WRITING:START -->
+## Writing policy
+
+- Read the manifest's `roles.authoring_policy` path before writing new original English Wiki prose; use `AUTHORING.md` when no path is mapped. Apply the DenchCo ASD-STE100-inspired 80% house style to all such prose, including prose created for a new Wiki.
+- 80% is a pragmatic house-style aim, not a computed score or a claim of ASD-STE100 compliance. Apply the core habits by default and document material exceptions in the mapped authoring policy or `AUTHORING.md` fallback with their scope and reason.
+- Use direct sentences, one main idea at a time, consistent terms, clear conditions, short paragraphs, and ordered steps where sequence matters. Prefer active voice when the actor is known; never invent an actor to avoid passive voice.
+- Preserve quotations, code, identifiers, official names, necessary technical terms, source claims, uncertainty, normative obligations, and the exact canonical governing question. Explain unfamiliar terms where useful without changing their meaning or evidence status.
+- Follow explicit user instructions and stricter applicable local policy. Review meaning and source fidelity before style; do not remove a necessary qualification to make a sentence shorter.
+- Apply this policy prospectively. Do not bulk-rewrite existing content, change consumer pins, or claim adoption merely because this policy is available.
+<!-- DKBWS-PROMPT-001-WRITING:END -->
+
+## Authority and boundaries
+
+- This independent repository contains only knowledge about `Soil Acoustics Ltd, soil ecoacoustic evidence, and comparison of soil monitoring systems` and its own operating instructions.
+- Canonical knowledge and registered evidence outrank rendered pages, generated graphs, and conversational answers.
+- When the Human Wiki displays registered source identities, render each citation as a stable numeric superscript with its full identity in the accessible name and an independent internal link to its exact mapped source-register row; direct links naming official authorities or publications use registered source URLs. Do not invent citations for subject-empty or citation-free content.
+- When the Human Wiki declares a canonical governing question, map its authoritative source and bounded reader-source set. Every verbatim repetition in that set uses the governed callout; paraphrases, unrelated quotations, and records outside the declared reader set remain neutral. Do not invent a question for a subject-empty Wiki.
+- The standard is pinned by source and immutable revision in `.wiki-standard.yaml`; public help is at <https://denchco.github.io/knowledge-base-wiki-documentation/>.
+- Do not import the standard's help pages, knowledge bundle, evidence records, dogfood reports, fixtures, or deployment workflow as this repository's content.
+- Preserve unknown OKF fields and declared local deviations.
+- For a persistent managed preview, serialize the shared-register reload, live-listener checks, and atomic reservation of the project-unique service ID and loopback endpoint under a bounded user-local lock. Never kill or overwrite another listener. Exact-match all twelve governed registration fields, the generated installed user-service definition, the loaded job, registered canonical URL, and static identity marker. Use the fail-closed `service:preview` handoff rather than an alternate test port; live service status is maintainer-only evidence and remains not checked in distribution/CI.
+- Do not publish, change deployment, expose credentials, or alter evidence status without explicit authorization.
+
+<!-- DKBWS-PROMPT-002-LIVE-URL:START -->
+## Development response navigation
+
+- In every development response, user-facing navigation to Human or LLM Wiki content MUST use live absolute HTTP(S) URLs rooted at the Wiki's configured canonical URL.
+- Resolve that origin from `capabilities.human_wiki_url` when declared, otherwise from the registered canonical managed-preview endpoint. Verify the exact service identity and every displayed route during the turn before calling a managed local URL live.
+- Treat inline/reference/autolink Markdown, HTML `a`/`area` links, and plain GFM-autolinked HTTP(S) text as response navigation. `file://` URLs, IDE or editor URLs, clickable local-filesystem paths, and repository-relative Markdown links MUST NOT substitute for Wiki navigation. If a route is unavailable, report that state rather than falling back to a file link.
+- A plain repository path MAY identify an implementation artifact with no Wiki route, but it MUST NOT be clickable or presented as Wiki navigation.
+- When the response-link checker is present, validate a captured draft with `npm run response:links:check -- --base-url <canonical-url>`. For a managed local Wiki, add `--managed-live` so the exact registered service and HTTP 200 for every displayed route are checked. This does not remove the `STD-VAL-007` host pre-send limitation for responses the host never exposes.
+<!-- DKBWS-PROMPT-002-LIVE-URL:END -->
+
+## Consumer-to-Standard proposals
+
+- A user-authored improvement remains project-owned until it is accepted into the Standard and included in an immutable release. Do not change this repository's Standard pin, conformance claims, or deviations merely because a proposal exists.
+- Finish, verify, and commit the local implementation before preparing an upstream proposal. Preserve its full Git commit, optional JJ change ID, and immutable pinned Standard revision in a tracked schema-valid record under `standard-proposals/`; do not make an ignored Markdown draft or retrospective topic-evidence record authoritative.
+- Use `npm run standard:proposal -- check <id>` for offline validation, then `prepare` and `show` to inspect the disposable scrubbed payload under `output/standard-proposals/`. Remove private paths, secrets, personal or confidential data, restricted evidence, vulnerability detail, and unlicensed material. The workflow uploads no consumer files or attachments.
+- Explicit approval binds the exact repository, title, body, labels, stable hidden marker, form revision, and payload digest. `open` must fail closed on an unavailable or changed form, missing required label, duplicate or ambiguous marker, stale approval, or unmatched payload. It may open the governed form but must never submit it; the user performs the final Submit action.
+- Validate every direct lifecycle state and refuse terminal workflow-v1 transitions even when JSON was edited outside the CLI. Record issue linkage only after an unambiguous exact marker/payload match. Issue state, explicit Standard classification/decision, immutable release inclusion, and optional consumer adoption are independent states and authorities. Before recording a release, require registry bytes at the exact full revision, strict release-to-registry ancestry, the exact public non-draft immutable tag, and tag-to-revision equality. Record each transition in its own JJ phase; a closed issue proves no acceptance, and release proves no pin change.
+- Never use `pre-registry-local-history` for consumer work. It is reserved for the one exact immutable UK Digital Health `DKBWS-LINK-002` bridge already encoded by Standard workflow v1.
+
+## Clarification protocol
+
+Where material uncertainty remains, ask one individually numbered question at a time using `Question 1 of N`. Revise `N` as each answer changes the remaining uncertainty.
+
+<!-- DKBWS-PROV-001-TURN:START -->
+## Development-turn completion
+
+- In a Standard Production maintenance workspace, every development turn that changes persistent repository files MUST end with that turn's changes recorded in a Jujutsu commit before the agent gives its final response.
+- Run the repository's complete applicable verification and the read-only maintainer provenance check first, then inspect Git and Jujutsu state and commit the turn's changes. A failed or unrun required check MUST be reported in the commit description and final response; it does not permit an uncommitted final handoff.
+- The boundary is the end of the development turn, not a subjective judgement that work is “substantive.” If the turn changed no persistent files, do not create an empty commit.
+<!-- DKBWS-PROV-001-TURN:END -->
+
+<!-- DKBWS-PROMPT-001-HANDOFF:START -->
+## Completion and handoff
+
+- Complete the requested scope before proposing further work. At the end of every development cycle, assess and report the next steps against the Wiki's continuing subject, governing question when declared, evidence and content maturity. Do not limit that assessment to unfinished files from the last turn or treat initial coverage as permanent completion.
+- `Next Steps` are recommendations, not continuation authority. Prioritise subject content and evidence work. Address any failed or unrun required check before optional content work. Each item must fit one follow-up pass and remain within the Wiki's agreed scope.
+- Include no more than three prioritised items. Use `Proposed update:` to name the concrete target artifact or outcome, `Why it matters:` to explain its value to the Wiki's purpose, and `Done when:` to state a testable completion condition.
+- Apply a cycle guard before selecting items. Check canonical status, the validation queue and relevant handoff evidence; do not repeat completed work or a completed technical handoff. Do not reopen a bounded, parked, or evidence-blocked trail without new evidence, a due scheduled recheck, or explicit user instruction. Record parked work with `blocked_by`, `reopen_when`, and `last_checked` fields.
+- Do not add unrelated research, generic improvements, passive waiting, invitations to continue, or filler merely to reach a count. If no grounded content update or required follow-up qualifies, state: `No further grounded content update is available.` Do not invent a list.
+- Keep zero to three current project priorities in `docs/project/status.md`, with the same proposed update, value and completion condition. Remove completed priorities. Where the captured-draft checker is present, run `npm run response:next-steps:check -- --input <draft>` before sending a development-cycle response. The checker proves format, not evidence grounding or interception of uncaptured output.
+<!-- DKBWS-PROMPT-001-HANDOFF:END -->
+
+## Verification
+
+Run the complete verification contract for every claimed capability. Generated output never substitutes for canonical source.
+
+## Soil monitoring evidence
+
+Follow the contract in the source register. Distinguish acquisition of sound, inference about organisms, and decisions about land management. Record product-specific trial results separately from research on another recorder, index or habitat. Record the date, currency, taxes, geography and included components for each commercial price.

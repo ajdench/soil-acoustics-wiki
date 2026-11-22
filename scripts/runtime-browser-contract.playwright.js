@@ -1,0 +1,1598 @@
+import { inspectHeaderControls } from "./header-browser-contract.mjs";
+
+export async function waitForDrawnGraphCanvas(frame, view, viewport, timeout = 15000) {
+  const minimumOpaqueRatio = view === "2d" ? 0.1 : 0.95;
+  try {
+    // A canvas is attached before vis-network finishes layout and before WebGL draws.
+    const result = await frame.waitForFunction(({ view, minimumOpaqueRatio }) => {
+      const canvas = document.querySelector("canvas");
+      if (!canvas?.width || !canvas.height) return false;
+      const { width, height } = canvas;
+      const kind = view === "2d" ? "2d" : "webgl";
+      let pixels;
+      if (kind === "2d") {
+        const context = canvas.getContext("2d");
+        if (!context) return false;
+        pixels = context.getImageData(0, 0, width, height).data;
+      } else {
+        const context = canvas.getContext("webgl2") || canvas.getContext("webgl");
+        if (!context) return false;
+        pixels = new Uint8Array(width * height * 4);
+        context.readPixels(0, 0, width, height, context.RGBA, context.UNSIGNED_BYTE, pixels);
+      }
+      const colours = new Set();
+      let opaqueSamples = 0;
+      let samples = 0;
+      const stepX = Math.max(1, Math.floor(width / 48));
+      const stepY = Math.max(1, Math.floor(height / 48));
+      for (let y = 0; y < height; y += stepY) {
+        for (let x = 0; x < width; x += stepX) {
+          const index = (y * width + x) * 4;
+          colours.add((pixels[index] << 16) | (pixels[index + 1] << 8) | pixels[index + 2]);
+          if (pixels[index + 3] > 0) opaqueSamples += 1;
+          samples += 1;
+        }
+      }
+      const opaqueRatio = samples ? opaqueSamples / samples : 0;
+      return colours.size > 8 && opaqueRatio > minimumOpaqueRatio
+        ? { kind, width, height, distinctColours: colours.size, opaqueRatio } : false;
+    }, { view, minimumOpaqueRatio }, { polling: view === "2d" ? 200 : "raf", timeout });
+    return await result.jsonValue();
+  } catch (error) {
+    if (error.name !== "TimeoutError") throw error;
+    throw new Error(`${view.toUpperCase()} Graphify canvas pixels must be nonblank at ${viewport} width: no frame exceeded eight distinct colours and ${minimumOpaqueRatio} opaque ratio within ${timeout}ms`);
+  }
+}
+
+export default async (page, options = {}) => {
+  const configuration = await page.evaluate(() => {
+    const current = new URL(location.href);
+    return {
+      origin: current.origin,
+      questionRoute: current.searchParams.get("question") || "/",
+      mermaidRoute: current.searchParams.get("mermaid") || "/",
+      architectureRoute: current.searchParams.get("architecture"),
+      tableRoute: current.searchParams.get("table"),
+      listRoute: current.searchParams.get("list"),
+      sourceLinksRoute: current.searchParams.get("sourceLinks"),
+      sourceRegisterRoute: current.searchParams.get("sourceRegister") || "/sources/",
+      sourceLinksEnabled: current.searchParams.get("sourceLinksEnabled") === "1",
+      graphEnabled: current.searchParams.get("graph") === "1",
+      graph2dRoute: current.searchParams.get("graph2d") || "/graph/two-dimensional/",
+      graph3dRoute: current.searchParams.get("graph3d") || "/graph/three-dimensional/",
+    };
+  });
+  const baseUrl = configuration.origin;
+  const questionRoute = configuration.questionRoute;
+  const mermaidRoute = configuration.mermaidRoute;
+  const architectureRoute = configuration.architectureRoute || mermaidRoute;
+  const tableRoute = configuration.tableRoute || mermaidRoute;
+  const listRoute = configuration.listRoute || mermaidRoute;
+  const sourceLinksRoute = configuration.sourceLinksRoute || questionRoute;
+  const sourceRegisterRoute = configuration.sourceRegisterRoute;
+  const sourceLinksEnabled = configuration.sourceLinksEnabled;
+  const graphEnabled = configuration.graphEnabled;
+  const governingQuestionRepetitionApplicable = options.governingQuestion?.applicable === true;
+  const canonicalGoverningQuestion = typeof options.governingQuestion?.canonicalQuestion === "string"
+    ? options.governingQuestion.canonicalQuestion
+    : null;
+  const governingQuestionRepetitionRoutes = Array.isArray(options.governingQuestion?.repetitionRoutes)
+    ? options.governingQuestion.repetitionRoutes.filter(entry => entry && typeof entry.route === "string")
+    : [];
+  const appearance = options.appearance ?? null;
+  const lightColors = appearance?.light ?? {
+    headerBackground: "#ffffff", headerText: "#1f2933", background: "#ffffff",
+    accent: "#004d80", accentContrast: "#ffffff", surface: "#ffffff",
+  };
+  const rgb = hex => `rgb(${hex.slice(1).match(/../g).map(channel => parseInt(channel, 16)).join(", ")})`;
+  const failures = [];
+  const requests = [];
+  const resourceRequests = [];
+  const localResponseFailures = [];
+  const pageErrors = [];
+  const consoleErrors = [];
+
+  page.on("request", request => {
+    requests.push(request.url());
+    resourceRequests.push({ url: request.url(), type: request.resourceType() });
+  });
+  page.on("requestfailed", request => {
+    if (request.url().startsWith(baseUrl)) {
+      localResponseFailures.push(`${request.url()}: ${request.failure()?.errorText || "request failed"}`);
+    }
+  });
+  page.on("response", response => {
+    if (response.url().startsWith(baseUrl) && response.status() >= 400) {
+      localResponseFailures.push(`${response.url()}: HTTP ${response.status()}`);
+    }
+  });
+  page.on("pageerror", error => pageErrors.push(error.message));
+  page.on("console", message => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+
+  const check = (condition, message) => {
+    if (!condition) failures.push(message);
+  };
+  const px = value => Number.parseFloat(String(value || "").replace("px", ""));
+  const closeTo = (left, right, tolerance = 1) => Math.abs(left - right) <= tolerance;
+  const routeUrl = route => `${baseUrl}${route.startsWith("/") ? route : `/${route}`}`;
+  const goto = async (route, waitUntil = "networkidle") => {
+    const response = await page.goto(routeUrl(route), { waitUntil });
+    check(Boolean(response?.ok()), `${route} did not return HTTP 200`);
+  };
+  // Exercise the renderer's real radio/label controller. Do not write palette
+  // storage or body attributes: that would bypass the behaviour being verified.
+  const paletteSelector = 'form[data-md-component="palette"]';
+  const selectNativeScheme = async scheme => {
+    if (await page.locator("body").getAttribute("data-md-color-scheme") === scheme) return;
+    const input = page.locator(`${paletteSelector} input[data-md-color-scheme="${scheme}"]`);
+    const id = await input.getAttribute("id");
+    check(Boolean(id), `The native palette must expose a ${scheme} radio option`);
+    if (!id) return;
+    await page.locator(`${paletteSelector} label[for="${id}"]:visible`).click();
+    await page.waitForFunction(expected => document.body.dataset.mdColorScheme === expected, scheme);
+  };
+  const inspectThemeContrast = (realm, selectors, graphName = null) => realm.evaluate(({ selectors, graphName }) => {
+    const rgba = value => value.startsWith("#")
+      ? [...[1, 3, 5].map(offset => parseInt(value.slice(offset, offset + 2), 16)), 1]
+      : [...(value.match(/[\d.]+/g) ?? []).map(Number), 1].slice(0, 4);
+    const over = (front, back) => [...front.slice(0, 3).map((value, index) => value * front[3] + back[index] * (1 - front[3])), 1];
+    const luminance = color => color.slice(0, 3).map(value => {
+      const channel = value / 255;
+      return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    }).reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
+    const contrast = (first, second) => {
+      const [lighter, darker] = [luminance(first), luminance(second)].sort((a, b) => b - a);
+      return (lighter + 0.05) / (darker + 0.05);
+    };
+    const parent = element => element.parentElement || element.getRootNode()?.host || null;
+    const lineage = element => {
+      const result = [];
+      for (let current = element; current; current = parent(current)) result.unshift(current);
+      return result;
+    };
+    const effectiveBackground = element => lineage(element).reduce((background, current) => over(rgba(getComputedStyle(current).backgroundColor), background), [255, 255, 255, 1]);
+    const roots = [document];
+    for (let index = 0; index < roots.length; index += 1) {
+      for (const element of roots[index].querySelectorAll("*")) if (element.shadowRoot) roots.push(element.shadowRoot);
+    }
+    const entries = selectors.flatMap(selector => roots.flatMap(root => [...root.querySelectorAll(selector)]).filter(element => {
+      const bounds = element.getBoundingClientRect();
+      return bounds.width > 0 && bounds.height > 0 && lineage(element).every(current => {
+        const style = getComputedStyle(current);
+        return style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) > 0;
+      });
+    }).slice(0, 6).map(element => {
+      const style = getComputedStyle(element);
+      const background = effectiveBackground(element);
+      const foreground = rgba(style.color);
+      foreground[3] *= lineage(element).reduce((value, current) => value * Number(getComputedStyle(current).opacity), 1);
+      return { selector, text: element.textContent.trim().slice(0, 70), color: style.color, background, ratio: contrast(over(foreground, background), background) };
+    }));
+    const token = name => {
+      const probe = document.createElement("span");
+      probe.style.color = `var(--${name})`;
+      document.body.append(probe);
+      const result = getComputedStyle(probe).color;
+      probe.remove();
+      return result;
+    };
+    const background = effectiveBackground(document.body);
+    const tokens = Object.fromEntries(["background", "surface", "text", "muted", "accent", "focus"].map(name => [name, token(graphName ? `graph-${name}` : name)]));
+    let graphMetrics = null;
+    if (graphName) {
+      const theme = window.graphTheme?.current;
+      const checkbox = document.querySelector("#select-all-cb");
+      const mark = checkbox ? getComputedStyle(checkbox, "::after") : null;
+      graphMetrics = {
+        theme,
+        timeOrigin: performance.timeOrigin,
+        controlBoundaries: [...document.querySelectorAll('#search, input[type="search"], .legend-cb:not(:checked)')]
+          .filter(element => element.getBoundingClientRect().width > 0 && element.getBoundingClientRect().height > 0)
+          .map(element => ({ id: element.id || element.className,
+            ratio: contrast(rgba(getComputedStyle(element).borderTopColor), effectiveBackground(parent(element))) })),
+        checkboxRatio: checkbox ? contrast(rgba(checkbox.indeterminate ? mark.backgroundColor : mark.borderBottomColor), rgba(getComputedStyle(checkbox).backgroundColor)) : null,
+        labelsMinimum: graphName === "2d" && typeof nodesDS !== "undefined"
+          ? Math.min(...nodesDS.get().filter(node => node.font?.size > 0).map(node => contrast(rgba(node.font.color), background)))
+          : null,
+        sceneMatches: graphName !== "3d" || (typeof graph !== "undefined" && rgba(graph.backgroundColor()).slice(0, 3).every((value, index) => Math.abs(value - background[index]) <= 1)),
+      };
+    }
+    return { scheme: document.body.dataset.mdColorScheme, bodyBackground: getComputedStyle(document.body).backgroundColor,
+      backgroundLuminance: luminance(background), tokens, entries, graph: graphMetrics,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+  }, { selectors, graphName });
+  const checkThemeContrast = (metrics, label) => {
+    check(metrics.entries.length > 0 && metrics.entries.every(entry => entry.ratio >= 4.5), `${label} text must retain 4.5:1 contrast: ${JSON.stringify(metrics.entries.filter(entry => entry.ratio < 4.5))}`);
+    check(metrics.overflow <= 1, `${label} must not create horizontal page overflow`);
+    check(metrics.scheme === "default" ? metrics.backgroundLuminance > 0.8 : metrics.backgroundLuminance < 0.1, `${label} must paint the selected light or dark background`);
+  };
+  const inspectRenderedMermaidContrast = async () => {
+    // Zensical renders Mermaid inside a closed shadow root. The pinned
+    // Chromium contract can inspect that actual SVG through read-only CDP;
+    // a document/open-shadow query would silently measure an empty host.
+    const client = await page.context().newCDPSession(page);
+    try {
+      await client.send("DOM.enable");
+      await client.send("CSS.enable");
+      const descendants = node => [node, ...(node.children || []).flatMap(descendants), ...(node.shadowRoots || []).flatMap(descendants)];
+      const attribute = (node, name) => {
+        const index = (node.attributes || []).indexOf(name);
+        return index < 0 ? "" : node.attributes[index + 1];
+      };
+      const hasClass = (node, name) => attribute(node, "class").split(/\s+/u).includes(name);
+      let rendered = [];
+      const deadline = Date.now() + 10000;
+      do {
+        const { root } = await client.send("DOM.getDocument", { depth: -1, pierce: true });
+        const { nodeId } = await client.send("DOM.querySelector", { nodeId: root.nodeId, selector: ".mermaid" });
+        if (nodeId) {
+          const { node } = await client.send("DOM.describeNode", { nodeId, depth: -1, pierce: true });
+          rendered = descendants(node);
+          if (rendered.some(item => item.localName === "svg") && rendered.some(item => hasClass(item, "node"))) break;
+        }
+        await page.waitForTimeout(100);
+      } while (Date.now() < deadline);
+      const style = async node => Object.fromEntries((await client.send("CSS.getComputedStyleForNode", { nodeId: node.nodeId })).computedStyle.map(entry => [entry.name, entry.value]));
+      const luminance = value => (value.match(/[\d.]+/g) || []).slice(0, 3).map(Number).map(value => {
+        const channel = value / 255;
+        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+      }).reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
+      const ratio = (first, second) => {
+        const values = [luminance(first), luminance(second)].sort((a, b) => b - a);
+        return (values[0] + 0.05) / (values[1] + 0.05);
+      };
+      const background = await page.locator("body").evaluate(body => getComputedStyle(body).backgroundColor);
+      const nodes = [];
+      for (const node of rendered.filter(item => hasClass(item, "node"))) {
+        const children = descendants(node);
+        const shape = children.find(item => ["rect", "polygon"].includes(item.localName));
+        const text = children.find(item => item.localName === "text");
+        if (!shape || !text) continue;
+        const shapeStyle = await style(shape);
+        const textStyle = await style(text);
+        nodes.push({ label: descendants(text).filter(item => item.nodeType === 3).map(item => item.nodeValue).join(" "),
+          textRatio: ratio(textStyle.fill, shapeStyle.fill), boundaryRatio: ratio(shapeStyle.stroke, background) });
+      }
+      const edgeRatios = [];
+      for (const edge of rendered.filter(item => hasClass(item, "flowchart-link"))) edgeRatios.push(ratio((await style(edge)).stroke, background));
+      return { nodes, edgeRatios };
+    } finally {
+      await client.detach();
+    }
+  };
+  const inspectPaletteControl = async (scheme, viewportName) => {
+    const metrics = await page.locator(paletteSelector).evaluate(form => {
+      const visible = element => element && !element.hidden && getComputedStyle(element).display !== "none" && element.getBoundingClientRect().width > 0;
+      const inputs = [...form.querySelectorAll('input[type="radio"]')];
+      const label = [...form.querySelectorAll("label")].find(visible);
+      const width = document.querySelector(".layout-width-toggle");
+      const bounds = label?.getBoundingClientRect();
+      const widthBounds = visible(width) ? width.getBoundingClientRect() : null;
+      return {
+        options: inputs.map(input => ({ scheme: input.dataset.mdColorScheme, name: input.getAttribute("aria-label"), checked: input.checked })),
+        labelTitle: label?.title || "", labelTarget: label?.control?.dataset.mdColorScheme,
+        visible: Boolean(bounds && bounds.width > 0 && bounds.height > 0 && bounds.left >= 0 && bounds.right <= innerWidth),
+        immediatelyBeforeWide: width?.previousElementSibling === form,
+        positionBeforeWide: !widthBounds || Boolean(bounds && bounds.right <= widthBounds.left + 1 && Math.abs((bounds.top + bounds.height / 2) - (widthBounds.top + widthBounds.height / 2)) <= 2),
+      };
+    });
+    check(metrics.options.length === 2 && metrics.options.every(option => option.name), `${viewportName} palette must use two named native radio options`);
+    check(metrics.options.filter(option => option.checked).length === 1 && metrics.options.some(option => option.checked && option.scheme === scheme), `${viewportName} selected radio must reflect ${scheme}`);
+    check(metrics.visible && metrics.labelTitle && metrics.labelTarget !== scheme, `${viewportName} must expose a visible, labelled switch to the other scheme`);
+    check(metrics.immediatelyBeforeWide && metrics.positionBeforeWide, `${viewportName} palette control must sit immediately left of Wide in DOM and visual order`);
+    return metrics;
+  };
+  const inspectPaletteKeyboard = async (scheme, viewportName, stage) => {
+    const label = `${scheme}/${viewportName}/${stage}`;
+    const control = await inspectPaletteControl(scheme, label);
+    // Report a missing restored selection before any interaction can repair it.
+    if (!control.options.some(option => option.checked && option.scheme === scheme)) return { control };
+    const checkedRadio = () => page.locator(`${paletteSelector} input:checked`);
+    if (viewportName === "desktop") {
+      await page.locator(".layout-width-toggle").focus();
+      await page.keyboard.press("Shift+Tab");
+    } else {
+      await page.locator(".md-skip").focus();
+      for (let index = 0; index < 12; index += 1) {
+        await page.keyboard.press("Tab");
+        if (await checkedRadio().evaluate(input => document.activeElement === input)) break;
+      }
+    }
+    const focus = await checkedRadio().evaluate(input => {
+      const visibleLabel = [...input.form.querySelectorAll("label")].find(label => !label.hidden && getComputedStyle(label).display !== "none");
+      const style = visibleLabel && getComputedStyle(visibleLabel);
+      return { focused: document.activeElement === input, outline: style?.outlineStyle, width: style?.outlineWidth };
+    });
+    check(focus.focused, `${label} Tab must enter the selected native palette option`);
+    check(focus.focused && focus.outline !== "none" && px(focus.width) >= 2, `${label} native palette focus must be visible before switching`);
+    if (!focus.focused) return { control, focus };
+    const otherScheme = scheme === "default" ? "slate" : "default";
+    await page.keyboard.press("ArrowRight");
+    await page.waitForFunction(expected => document.body.dataset.mdColorScheme === expected, otherScheme);
+    check(await checkedRadio().evaluate(input => document.activeElement === input), `${label} switching must retain native radio focus`);
+    await page.keyboard.press("ArrowLeft");
+    await page.waitForFunction(expected => document.body.dataset.mdColorScheme === expected, scheme);
+    return { control, focus };
+  };
+  const inspectGoverningQuestion = async (viewportName, route, expectedQuestion = null, expectedCount = 1) => {
+    await goto(route);
+    const metrics = await page.evaluate(() => {
+      const article = document.querySelector(".md-typeset");
+      const questions = [...document.querySelectorAll(".md-typeset blockquote.governing-question")];
+      const question = questions[0] || null;
+      const questionText = question?.querySelector(":scope > p") || null;
+      const probe = document.createElement("span");
+      probe.style.color = "var(--accent)";
+      probe.style.position = "absolute";
+      probe.style.left = "-10000px";
+      const ordinary = document.createElement("blockquote");
+      ordinary.innerHTML = "<p>Neutral quotation fixture.</p>";
+      ordinary.style.position = "absolute";
+      ordinary.style.left = "-10000px";
+      const negative = document.createElement("blockquote");
+      negative.className = "governing-question";
+      negative.innerHTML = "<p>Negative governing-question fixture.</p>";
+      negative.style.position = "absolute";
+      negative.style.left = "-10000px";
+      negative.style.setProperty("border-inline-start-color", "rgb(1, 2, 3)", "important");
+      negative.querySelector("p").style.setProperty("color", "rgb(4, 5, 6)", "important");
+      article?.append(probe, ordinary, negative);
+      try {
+        const accent = getComputedStyle(probe).color;
+        const ordinaryText = ordinary.querySelector("p");
+        const negativeText = negative.querySelector("p");
+        return {
+          count: questions.length,
+          questionText: questionText?.textContent ?? "",
+          questions: questions.map(item => {
+            const text = item.querySelector(":scope > p");
+            return {
+              questionText: text?.textContent ?? "",
+              rail: getComputedStyle(item).borderInlineStartColor,
+              text: text ? getComputedStyle(text).color : "",
+              weight: text ? getComputedStyle(text).fontWeight : "",
+            };
+          }),
+          accent,
+          rail: question ? getComputedStyle(question).borderInlineStartColor : "",
+          text: questionText ? getComputedStyle(questionText).color : "",
+          weight: questionText ? getComputedStyle(questionText).fontWeight : "",
+          ordinaryRail: getComputedStyle(ordinary).borderInlineStartColor,
+          ordinaryText: ordinaryText ? getComputedStyle(ordinaryText).color : "",
+          negativeRail: getComputedStyle(negative).borderInlineStartColor,
+          negativeText: negativeText ? getComputedStyle(negativeText).color : "",
+          pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        };
+      } finally {
+        probe.remove();
+        ordinary.remove();
+        negative.remove();
+      }
+    });
+    const location = `${route} at ${viewportName} width`;
+    check(metrics.count === expectedCount, `The governing-question route ${location} must expose ${expectedCount} governing-question marker${expectedCount === 1 ? "" : "s"}`);
+    if (expectedQuestion !== null) {
+      check(
+        metrics.questions.every(item => item.questionText === expectedQuestion),
+        `Every governing-question marker on ${location} must render the identical canonical question text`,
+      );
+    }
+    check(Boolean(metrics.accent), `The active accent token must resolve on ${location}`);
+    check(metrics.questions.every(item => item.rail === metrics.accent), `Every governing-question rail must equal the active accent on ${location}`);
+    check(metrics.questions.every(item => item.text === metrics.accent), `Every governing-question text must equal the active accent on ${location}`);
+    check(metrics.questions.every(item => Number.parseInt(item.weight, 10) >= 700), `Every governing-question text must remain bold on ${location}`);
+    check(
+      metrics.ordinaryRail !== metrics.accent && metrics.ordinaryText !== metrics.accent,
+      `An ordinary quotation must remain neutral on ${location}`,
+    );
+    check(
+      metrics.negativeRail !== metrics.accent && metrics.negativeText !== metrics.accent,
+      `The negative mismatched-colour fixture must be rejected on ${location}`,
+    );
+    check(metrics.pageOverflow <= 1, `The governing-question callout must not create page overflow on ${location}`);
+    return { route, ...metrics };
+  };
+  const inspectGoverningQuestionRepetitionRoutes = async (viewportName, primaryMetrics) => {
+    if (!governingQuestionRepetitionApplicable) return [];
+    check(Boolean(canonicalGoverningQuestion), "DKBWS-HUMAN-004 browser verification requires canonical governing-question text");
+    check(governingQuestionRepetitionRoutes.length > 0, "DKBWS-HUMAN-004 browser verification requires at least one repetition route");
+    const results = [];
+    for (const entry of governingQuestionRepetitionRoutes) {
+      if (entry.route === questionRoute
+        && primaryMetrics.count === entry.repetitions
+        && primaryMetrics.questions.every(item => item.questionText === canonicalGoverningQuestion)) {
+        results.push({ ...entry, metrics: primaryMetrics });
+        continue;
+      }
+      results.push({
+        ...entry,
+        metrics: await inspectGoverningQuestion(
+          viewportName,
+          entry.route,
+          canonicalGoverningQuestion,
+          entry.repetitions,
+        ),
+      });
+    }
+    return results;
+  };
+  const inspectSourceLink = async (viewportName, followDestination = false) => {
+    if (!sourceLinksEnabled) return null;
+    if (Array.isArray(options.citationRoutes) && options.citationRoutes.length === 0) return { routes: [], count: 0 };
+    await goto(sourceLinksRoute);
+    const citationRoutes = options.citationRoutes?.length ? options.citationRoutes : [{ route: sourceLinksRoute }];
+    const routeResults = [];
+    for (const entry of citationRoutes) {
+      await goto(entry.route);
+      const citations = page.locator('.md-content__inner a[href*="#src-"], .md-content__inner a[data-source-id]');
+      await citations.evaluateAll(elements => elements.forEach(element => {
+        for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+          if (parent.tagName === "DETAILS") parent.open = true;
+        }
+      }));
+      const inspection = await citations.evaluateAll(inspectSourceCitationElements);
+      const rows = inspection.rows;
+      for (const fixture of inspection.hiddenFixtures) {
+        check(fixture.pass, `Invisible citation fixture ${fixture.name} must fail visibility on ${entry.route} at ${viewportName} width: ${JSON.stringify(fixture)}`);
+      }
+      check(rows.length > 0, `Citation-bearing route ${entry.route} must retain its source links at ${viewportName} width`);
+      if (entry.count !== undefined) check(rows.length === entry.count, `Every canonical citation on ${entry.route} must render at ${viewportName} width`);
+      if (entry.identities) check(JSON.stringify(rows.map(item => item.id)) === JSON.stringify(entry.identities), `Citation identities on ${entry.route} must retain canonical order at ${viewportName} width`);
+      for (const row of rows) {
+        const target = new URL(row.href);
+        const location = `${entry.route} ${row.id} at ${viewportName} width`;
+        check(/^SRC-\d{3,}$/.test(row.id), `Citation must retain its registered identity: ${location}`);
+        check(row.accessibleName === `Source ${row.id}`, `Citation must expose its full accessible identity: ${location}`);
+        check(row.tabIndex === 0 && row.focused && row.visible, `Citation must remain visible and independently keyboard focusable: ${location}`);
+        check(row.label === row.id.slice(4) && row.superscript, `Citation must display its stable zero-padded number in superscript: ${location}`);
+        check(row.groupText === row.groupExpected, `Adjacent citations must retain comma-separated groups: ${location}`);
+        check([row.before, row.after].every(value => !value.includes("[") && !value.includes("]")), `Numeric citations must not inherit brackets: ${location}`);
+        check(target.pathname === sourceRegisterRoute && target.hash === `#${row.id.toLowerCase()}`, `Citation must reach its exact mapped row: ${location}`);
+        check(row.groupContained && row.pageOverflow <= 1, `Citations must stay contained: ${location}`);
+      }
+      routeResults.push({ route: entry.route, count: rows.length });
+    }
+    await goto(sourceLinksRoute);
+    const citation = page.locator('.md-content__inner .source-citations a').first();
+    const metrics = await citation.evaluate(element => ({ id: element.dataset.sourceId, href: element.href }));
+    metrics.routes = routeResults;
+    await page.locator(".md-skip").focus();
+    const tabLimit = await page.locator('a[href], button, input, select, textarea, [tabindex="0"]').count() + 10;
+    for (let step = 0; step < tabLimit; step += 1) {
+      await page.keyboard.press("Tab");
+      if (await citation.evaluate(element => document.activeElement === element)) break;
+    }
+    const keyboard = await citation.evaluate(element => {
+      const style = getComputedStyle(element);
+      return { focused: document.activeElement === element, visible: element.matches(":focus-visible"), outline: style.outlineStyle, width: style.outlineWidth };
+    });
+    check(keyboard.focused && keyboard.visible && keyboard.outline !== "none" && px(keyboard.width) >= 2,
+      `Tab must reach a source citation with a visible focus ring at ${viewportName} width: ${JSON.stringify(keyboard)}`);
+    metrics.keyboard = keyboard;
+    if (options.capture) await options.capture(`citations-${viewportName}`, await page.screenshot({ fullPage: true }));
+    if (!followDestination) return metrics;
+    await Promise.all([
+      page.waitForURL(url => url.pathname === sourceRegisterRoute && url.hash === `#${metrics.id.toLowerCase()}`),
+      page.keyboard.press("Enter"),
+    ]);
+    const anchor = page.locator(`#${metrics.id.toLowerCase()}`);
+    await anchor.waitFor({ state: "attached" });
+    const destination = await anchor.evaluate((element, id) => ({
+      row: element.closest("tr")?.textContent.replace(/\s+/g, " ").trim() || "",
+      pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      id,
+    }), metrics.id);
+    check(destination.row.includes(metrics.id), `The source fragment must belong to the matching source-register row: ${JSON.stringify(destination)}`);
+    check(destination.pageOverflow <= 1, `The source-register destination must not overflow at ${viewportName} width`);
+    return { ...metrics, destination };
+  };
+  const inspectNavigation = async viewportName => {
+    const metrics = await page.evaluate(() => {
+      const navigation = document.querySelector(".md-nav--primary");
+      const links = [...(navigation?.querySelectorAll("a.md-nav__link") || [])];
+      const controls = [...(navigation?.querySelectorAll(".md-nav__item--nested > label.md-nav__link") || [])];
+      return {
+        statusCount: navigation?.querySelectorAll(".md-status").length ?? null,
+        accessibleName: navigation?.getAttribute("aria-label") || "",
+        linkCount: links.length,
+        unnamedLinks: links.filter(link => !(link.getAttribute("aria-label") || link.textContent).trim()).length,
+        nonFocusableLinks: links.filter(link => link.tabIndex !== 0).length,
+        controlCount: controls.length,
+        invalidControls: controls.filter(control => {
+          const toggle = document.getElementById(control.htmlFor);
+          const nested = control.parentElement.querySelector("nav[aria-labelledby]");
+          return !control.textContent.trim() || !control.querySelector(".md-nav__icon") ||
+            !toggle || toggle.type !== "checkbox" || !nested || nested.getAttribute("aria-labelledby") !== control.id;
+        }).length,
+        heading: document.querySelector(".md-content h1")?.textContent.trim() || "",
+        title: document.title,
+        pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    check(metrics.statusCount === 0, `Reference navigation must omit lifecycle status icons, tooltips and fallback information icons at ${viewportName} width`);
+    check(Boolean(metrics.accessibleName), `Primary navigation must keep its accessible name at ${viewportName} width`);
+    check(metrics.linkCount > 0 && metrics.unnamedLinks === 0 && metrics.nonFocusableLinks === 0,
+      `Navigation links must retain page names and keyboard focus at ${viewportName} width`);
+    check(metrics.controlCount > 0 && metrics.invalidControls === 0,
+      `Native section labels, chevrons and toggle associations must remain intact at ${viewportName} width`);
+    check(Boolean(metrics.heading) && Boolean(metrics.title), `Page and document titles must remain present at ${viewportName} width`);
+    check(metrics.pageOverflow <= 1, `Navigation must not create page overflow at ${viewportName} width`);
+    return metrics;
+  };
+  const screenshotPixels = async buffer => {
+    const dataUrl = `data:image/png;base64,${buffer.toString("base64")}`;
+    return page.evaluate(async imageUrl => {
+      const blob = await fetch(imageUrl).then(response => response.blob());
+      const bitmap = await createImageBitmap(blob);
+      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const context = canvas.getContext("2d");
+      context.drawImage(bitmap, 0, 0);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      const colours = new Set();
+      let opaqueSamples = 0;
+      let samples = 0;
+      const stepX = Math.max(1, Math.floor(canvas.width / 48));
+      const stepY = Math.max(1, Math.floor(canvas.height / 48));
+      for (let y = 0; y < canvas.height; y += stepY) {
+        for (let x = 0; x < canvas.width; x += stepX) {
+          const index = (y * canvas.width + x) * 4;
+          colours.add((pixels[index] << 16) | (pixels[index + 1] << 8) | pixels[index + 2]);
+          if (pixels[index + 3] > 0) opaqueSamples += 1;
+          samples += 1;
+        }
+      }
+      return {
+        width: canvas.width,
+        height: canvas.height,
+        distinctColours: colours.size,
+        opaqueRatio: samples ? opaqueSamples / samples : 0,
+      };
+    }, dataUrl);
+  };
+  const inspectMermaidPage = async ({ route, pageName, expectedCount, viewportName, maxHorizontalOverflow = 0 }) => {
+    await goto(route);
+    await page.waitForSelector(".mermaid");
+    await page.waitForFunction(() => (
+      [...document.querySelectorAll(".mermaid")]
+        .every(diagram => diagram.getBoundingClientRect().height > 40)
+    ));
+    const geometry = await page.locator(".mermaid").evaluateAll(diagrams => diagrams.map(diagram => ({
+      width: diagram.clientWidth,
+      height: diagram.clientHeight,
+      scrollWidth: diagram.scrollWidth,
+      scrollHeight: diagram.scrollHeight,
+      scrollLeft: diagram.scrollLeft,
+      display: getComputedStyle(diagram).display,
+      justifyItems: getComputedStyle(diagram).justifyItems,
+    })));
+    check(
+      geometry.length === expectedCount,
+      `${pageName} must render exactly ${expectedCount} Mermaid diagram${expectedCount === 1 ? "" : "s"} at ${viewportName} width`,
+    );
+    for (const [index, diagram] of geometry.entries()) {
+      check(diagram.width > 200 && diagram.height > 40, `${pageName} Mermaid ${index + 1} must have non-empty geometry at ${viewportName} width`);
+      check(diagram.display === "grid" && diagram.justifyItems === "safe center", `${pageName} Mermaid ${index + 1} must use safe centring at ${viewportName} width`);
+      const horizontalOverflow = Math.max(0, diagram.scrollWidth - diagram.width);
+      check(
+        horizontalOverflow <= maxHorizontalOverflow + 1 && diagram.scrollHeight <= diagram.height + 1,
+        `${pageName} Mermaid ${index + 1} must stay within its ${maxHorizontalOverflow}px contained-overflow limit at ${viewportName} width: ${horizontalOverflow}px actual horizontal overflow versus ${maxHorizontalOverflow}px governed limit (+1px measurement tolerance)`,
+      );
+      if (horizontalOverflow > 1) {
+        check(Math.abs(diagram.scrollLeft - (horizontalOverflow / 2)) <= 1, `${pageName} Mermaid ${index + 1} must open centred within its pane at ${viewportName} width`);
+      } else {
+        check(Math.abs(diagram.scrollLeft) <= 1, `${pageName} Mermaid ${index + 1} must open without displaced scrolling at ${viewportName} width`);
+      }
+    }
+    const pageOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    check(pageOverflow <= 1, `${pageName} page must not overflow horizontally at ${viewportName} width`);
+    return geometry;
+  };
+  const inspectMermaidSourceLayouts = async (sources, pageName, expectations = []) => {
+    if (!Array.isArray(sources) || sources.length === 0) {
+      check(false, `${pageName} must supply canonical Mermaid source for collision checks`);
+      return [];
+    }
+    const layouts = await page.evaluate(async sourceList => {
+      if (!window.mermaid?.render) throw new Error("Pinned local Mermaid runtime is unavailable");
+      const mount = document.createElement("div");
+      mount.style.cssText = "position:absolute;left:-10000px;top:0;width:1200px;opacity:0;pointer-events:none";
+      document.body.append(mount);
+      try {
+        if (document.fonts?.ready) await document.fonts.ready;
+        const results = [];
+        for (const [diagramIndex, source] of sourceList.entries()) {
+          const rendered = await window.mermaid.render(
+            `canonical-layout-${Date.now()}-${diagramIndex}`,
+            source,
+          );
+          mount.innerHTML = rendered.svg;
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          const svg = mount.querySelector("svg");
+          if (!svg) {
+            results.push({
+              diagramIndex,
+              missingSvg: true,
+              title: "",
+              description: "",
+              edgeCount: 0,
+              edgeLabels: [],
+              nodes: [],
+              nodeOverlaps: [],
+              textPathCollisions: [],
+            });
+            continue;
+          }
+          const title = svg.querySelector("title")?.textContent?.trim() || "";
+          const description = svg.querySelector("desc")?.textContent?.trim() || "";
+          const edgeCount = svg.querySelectorAll(".flowchart-link").length;
+          const edgeLabels = [...svg.querySelectorAll(".edgeLabel text")]
+            .map(text => text.textContent?.trim() || "")
+            .filter(Boolean);
+          const nodes = [...svg.querySelectorAll("g.node")].map((node, index) => {
+            const rect = node.getBoundingClientRect();
+            return {
+              index,
+              label: [...node.querySelectorAll("text > tspan.row")]
+                .map(line => line.textContent.trim()).join(" ") || node.textContent?.trim() || `node ${index + 1}`,
+              rect: {
+                left: rect.left,
+                top: rect.top,
+                right: rect.right,
+                bottom: rect.bottom,
+                width: rect.width,
+                height: rect.height,
+                centerY: rect.top + (rect.height / 2),
+              },
+            };
+          });
+          const nodeOverlaps = [];
+          for (let left = 0; left < nodes.length; left += 1) {
+            for (let right = left + 1; right < nodes.length; right += 1) {
+              const overlapX = Math.min(nodes[left].rect.right, nodes[right].rect.right) - Math.max(nodes[left].rect.left, nodes[right].rect.left);
+              const overlapY = Math.min(nodes[left].rect.bottom, nodes[right].rect.bottom) - Math.max(nodes[left].rect.top, nodes[right].rect.top);
+              if (overlapX > 1 && overlapY > 1) nodeOverlaps.push([nodes[left].label, nodes[right].label]);
+            }
+          }
+          const texts = [...svg.querySelectorAll("text")].map((text, index) => ({
+            index,
+            label: text.textContent?.trim() || `text ${index + 1}`,
+            rect: text.getBoundingClientRect(),
+          })).filter(text => text.rect.width > 0 && text.rect.height > 0);
+          const textPathCollisions = [];
+          for (const [pathIndex, path] of [...svg.querySelectorAll(".flowchart-link")].entries()) {
+            const length = path.getTotalLength();
+            const matrix = path.getScreenCTM();
+            if (!matrix) continue;
+            let collision = null;
+            for (let distance = 2; distance < length - 2 && !collision; distance += 1.5) {
+              const localPoint = path.getPointAtLength(distance);
+              const point = new DOMPoint(localPoint.x, localPoint.y).matrixTransform(matrix);
+              collision = texts.find(text => (
+                point.x > text.rect.left + 1 && point.x < text.rect.right - 1 &&
+                point.y > text.rect.top + 1 && point.y < text.rect.bottom - 1
+              )) || null;
+            }
+            if (collision) textPathCollisions.push({ pathIndex, text: collision.label });
+          }
+          results.push({
+            diagramIndex,
+            missingSvg: false,
+            title,
+            description,
+            edgeCount,
+            edgeLabels,
+            nodes,
+            nodeOverlaps,
+            textPathCollisions,
+          });
+        }
+        return results;
+      } finally {
+        mount.remove();
+      }
+    }, sources);
+    for (const layout of layouts) {
+      const prefix = `${pageName} Mermaid ${layout.diagramIndex + 1}`;
+      const expected = expectations[layout.diagramIndex];
+      check(!layout.missingSvg, `${prefix} must render inspectable SVG geometry`);
+      check(layout.edgeLabels.length === 0, `${prefix} must not put text on connectors: ${layout.edgeLabels.join(", ")}`);
+      check(layout.nodeOverlaps.length === 0, `${prefix} nodes must not overlap: ${JSON.stringify(layout.nodeOverlaps)}`);
+      check(
+        layout.textPathCollisions.length === 0,
+        `${prefix} connectors must not intersect text: ${JSON.stringify(layout.textPathCollisions)}`,
+      );
+      if (!expected) {
+        check(false, `${prefix} must have a rendered topology expectation`);
+        continue;
+      }
+      const renderedLabels = layout.nodes.map(node => node.label).sort((left, right) => left.localeCompare(right));
+      const expectedLabels = [...expected.nodeLabels].sort((left, right) => left.localeCompare(right));
+      check(layout.nodes.length === expected.nodeLabels.length, `${prefix} must render exactly ${expected.nodeLabels.length} nodes; found ${layout.nodes.length}`);
+      check(JSON.stringify(renderedLabels) === JSON.stringify(expectedLabels), `${prefix} rendered node labels must be ${JSON.stringify(expectedLabels)}; found ${JSON.stringify(renderedLabels)}`);
+      check(layout.edgeCount === expected.edgeCount, `${prefix} must render exactly ${expected.edgeCount} relationships; found ${layout.edgeCount}`);
+      check(layout.title === expected.title, `${prefix} must render accessible title "${expected.title}"; found "${layout.title}"`);
+      check(layout.description === expected.description, `${prefix} must render the canonical accessible description`);
+      const inFlowOrder = expected.nodeLabels.map(label => layout.nodes.find(node => node.label === label));
+      for (let index = 1; index < inFlowOrder.length; index++) {
+        const previous = inFlowOrder[index - 1];
+        const current = inFlowOrder[index];
+        check(previous && current && current.rect.top > previous.rect.bottom,
+          `${prefix} must place "${expected.nodeLabels[index]}" below "${expected.nodeLabels[index - 1]}"`);
+      }
+    }
+    return layouts;
+  };
+  const inspectMobileTables = async () => {
+    const metrics = await page.evaluate(() => {
+      const article = document.querySelector(".md-content__inner");
+      const viewportWidth = document.documentElement.clientWidth;
+      const tables = [...(article?.querySelectorAll("table") || [])].map(table => {
+        let candidate = table;
+        let scrollHost = null;
+        while (candidate && candidate !== article) {
+          if (["auto", "scroll"].includes(getComputedStyle(candidate).overflowX)) {
+            scrollHost = candidate;
+            break;
+          }
+          candidate = candidate.parentElement;
+        }
+        const tableBounds = table.getBoundingClientRect();
+        const hostBounds = scrollHost?.getBoundingClientRect() || null;
+        const originalScrollLeft = scrollHost?.scrollLeft || 0;
+        if (scrollHost && scrollHost.scrollWidth > scrollHost.clientWidth + 1) scrollHost.scrollLeft = 1;
+        const moved = Boolean(scrollHost && scrollHost.scrollLeft !== originalScrollLeft);
+        if (scrollHost) scrollHost.scrollLeft = originalScrollLeft;
+        return {
+          visible: tableBounds.width > 0 && tableBounds.height > 0,
+          hasScrollHost: Boolean(scrollHost),
+          hostWidth: scrollHost?.clientWidth || 0,
+          hostBoundsWidth: hostBounds?.width || 0,
+          hostScrollWidth: scrollHost?.scrollWidth || 0,
+          tableWidth: table.scrollWidth,
+          tableHeight: tableBounds.height,
+          overflowsHost: Boolean(scrollHost && scrollHost.scrollWidth > scrollHost.clientWidth + 1),
+          moved,
+        };
+      });
+      return {
+        viewportWidth,
+        pageOverflow: document.documentElement.scrollWidth - viewportWidth,
+        tables,
+      };
+    });
+    check(metrics.tables.length > 0, "The configured table route must render at least one table at mobile width");
+    check(metrics.pageOverflow <= 1, "The configured table route must not create page overflow at mobile width");
+    check(
+      metrics.tables.every(table => (
+        table.visible
+        && table.hasScrollHost
+        && table.hostWidth > 0
+        && table.hostBoundsWidth <= metrics.viewportWidth + 1
+        && table.hostScrollWidth >= table.tableWidth
+      )),
+      `Every mobile table must remain visible inside a contained horizontal scroll host: ${JSON.stringify(metrics.tables)}`,
+    );
+    check(
+      metrics.tables.some(table => table.overflowsHost && table.moved),
+      `The configured table route must prove usable horizontal scrolling for a representative wide table: ${JSON.stringify(metrics.tables)}`,
+    );
+    return metrics.tables;
+  };
+
+  await page.evaluate(() => localStorage.removeItem("denchco-kb-wiki-layout-width"));
+  await page.setViewportSize({ width: 1256, height: 718 });
+  const initialScheme = appearance
+    ? (appearance.config.appearance === "dark" ? "slate" : "default")
+    : await page.locator(`${paletteSelector} input`).first().getAttribute("data-md-color-scheme");
+  check(await page.locator("body").getAttribute("data-md-color-scheme") === initialScheme, "A fresh browser must start in the configured initial appearance");
+  const initialWidth = await page.locator("html").getAttribute("data-layout-width");
+  check(initialWidth === (appearance?.config.width ?? "wide"), "A fresh browser must start in Wide unless an explicit configured width overrides it");
+  await inspectPaletteKeyboard(initialScheme, "desktop", "first load");
+  await selectNativeScheme("default");
+  const questionRouteIsGovernedRepetition = governingQuestionRepetitionApplicable
+    && governingQuestionRepetitionRoutes.some(entry => entry.route === questionRoute);
+  const questionRouteRepetitionCount = questionRouteIsGovernedRepetition
+    ? governingQuestionRepetitionRoutes.find(entry => entry.route === questionRoute).repetitions
+    : 1;
+  const desktopGoverningQuestion = await inspectGoverningQuestion(
+    "desktop",
+    questionRoute,
+    questionRouteIsGovernedRepetition ? canonicalGoverningQuestion : null,
+    questionRouteRepetitionCount,
+  );
+  const desktopGoverningQuestionRepetitions = await inspectGoverningQuestionRepetitionRoutes(
+    "desktop",
+    desktopGoverningQuestion,
+  );
+  await goto(questionRoute);
+  const desktopNavigation = await inspectNavigation("desktop");
+  const desktopBootstrap = await page.evaluate(() => ({
+    control: Boolean(document.querySelector(".layout-width-toggle")),
+    header: Boolean(document.querySelector(".md-header__inner")),
+    layoutScript: [...document.scripts].some(script => script.src.includes("/assets/layout-width.js")),
+    layoutStylesheet: [...document.styleSheets].some(sheet => sheet.href?.includes("/assets/layout-width.css")),
+    logo: (() => {
+      const image = document.querySelector(".md-header__button.md-logo img");
+      return image ? { src: image.currentSrc || image.src, width: image.naturalWidth, height: image.naturalHeight } : null;
+    })(),
+    favicon: document.querySelector('link[rel="icon"]')?.href || "",
+    href: location.href,
+  }));
+  if (!desktopBootstrap.control) {
+    throw new Error(`Desktop runtime did not initialize: ${JSON.stringify(desktopBootstrap)}`);
+  }
+  check(await page.locator(".md-header__button.md-logo svg, .md-header__button.md-logo img").count() > 0,
+    "The Soil Acoustics header must expose its site identity");
+  check(new URL(desktopBootstrap.favicon).origin === new URL(desktopBootstrap.href).origin,
+    "The Soil Acoustics favicon must be served locally");
+  await page.waitForSelector(".layout-width-toggle", { state: "attached" });
+  const widthControlDisplay = await page.locator(".layout-width-toggle").evaluate(
+    element => getComputedStyle(element).display,
+  );
+  check(widthControlDisplay !== "none", "The Standard/Wide control must be visible at the desktop verification width");
+  const measureHeader = () => page.evaluate(() => {
+    const rect = element => element?.getBoundingClientRect().toJSON() || null;
+    const visibleTopic = [...document.querySelectorAll(".md-header__title .md-header__topic")]
+      .find(element => {
+        const style = getComputedStyle(element);
+        return Number.parseFloat(style.opacity || "1") > 0.5 && element.getBoundingClientRect().width > 0;
+      });
+    const content = document.querySelector(".md-content__inner");
+    const heading = content?.querySelector("h1");
+    const control = document.querySelector(".layout-width-toggle");
+    const header = document.querySelector(".md-header");
+    const search = document.querySelector(".md-search__button");
+    return {
+      pageBackground: getComputedStyle(document.body).backgroundColor,
+      mode: document.documentElement.dataset.layoutWidth,
+      topic: rect(visibleTopic),
+      content: rect(content),
+      heading: rect(heading),
+      control: rect(control),
+      controlText: control?.textContent.trim() || "",
+      controlPressed: control?.getAttribute("aria-pressed"),
+      controlBackground: control ? getComputedStyle(control).backgroundColor : "",
+      controlBoxShadow: control ? getComputedStyle(control).boxShadow : "",
+      headerBackground: header ? getComputedStyle(header).backgroundColor : "",
+      headerColour: header ? getComputedStyle(header).color : "",
+      searchBackground: search ? getComputedStyle(search).backgroundColor : "",
+      searchColour: search ? getComputedStyle(search).color : "",
+    };
+  });
+
+  // Geometry is measured in both modes regardless of the consumer's initial choice.
+  if (await page.locator("html").getAttribute("data-layout-width") === "wide") {
+    await page.locator(".layout-width-toggle").click();
+    await page.waitForFunction(() => document.documentElement.dataset.layoutWidth === "standard");
+  }
+  const standardHeaderControls = await inspectHeaderControls(page, { scheme: "default", label: "Standard header", hover: false });
+  const standardHeader = await measureHeader();
+  check(standardHeader.mode === "standard", "Standard width must be active for its geometry measurement");
+  check(standardHeader.controlPressed === "false", "Standard width control must expose aria-pressed=false");
+  check(standardHeader.controlText === "Wide", "The desktop width control must have the visible label Wide");
+  check(standardHeader.pageBackground === rgb(lightColors.background), "The light page must render its governed background");
+  check(standardHeader.headerBackground === rgb(lightColors.headerBackground), "The production header must render its configured light surface");
+  check(standardHeader.headerColour === rgb(lightColors.headerText), "The production header must render its configured readable text");
+  check(standardHeader.searchBackground === standardHeaderControls.snapshot.tokens["header-control-surface"], "The closed Search control must use its opaque semantic surface");
+  check(standardHeader.searchColour === rgb(lightColors.headerText), "The closed Search control must render its configured readable text");
+  check(
+    standardHeader.topic && standardHeader.heading && closeTo(standardHeader.topic.left, standardHeader.heading.left),
+    "The visible desktop title must align to the body-text left rail in Standard mode",
+  );
+  check(
+    standardHeader.control && standardHeader.content && closeTo(standardHeader.control.right, standardHeader.content.right),
+    "The width control must align to the body-content right rail in Standard mode",
+  );
+
+  // Exercise upstream search through its open shadow-root UI. Result navigation
+  // must use this served build, while Markdown discovery retains canonical URLs.
+  const searchInput = page.locator('input[role="combobox"]');
+  const searchDestination = routeUrl(architectureRoute);
+  const searchResult = page.locator(`a[role="option"][href^="${searchDestination}"]`).first();
+  check(await page.locator('link[rel="alternate"][type="text/markdown"]').count() === 1,
+    "Rendered pages must retain their Markdown discovery alternate");
+  const openSearch = async () => {
+    const desktopButton = page.locator(".md-search__button");
+    if (await desktopButton.isVisible()) await desktopButton.click();
+    else await page.locator('.md-header__button[for="__search"]').click();
+    await searchInput.waitFor({ state: "attached" });
+    await page.waitForFunction(() => [...document.querySelectorAll("body > div")].some(host => {
+      const input = host.shadowRoot?.querySelector('input[role="combobox"]');
+      const dialog = input?.closest("dialog");
+      if (!dialog?.open || input.getRootNode().activeElement !== input) return false;
+      // The native dialog opens before its inner panel finishes fading in.
+      for (let element = input; element; element = element.parentElement || element.getRootNode()?.host || null) {
+        if (getComputedStyle(element).opacity !== "1") return false;
+      }
+      return true;
+    }));
+  };
+  await openSearch();
+  await searchInput.fill("comparing soil acoustic monitoring systems");
+  await searchResult.waitFor({ state: "visible" });
+  const searchResultLabel = (await searchResult.innerText()).trim();
+  check(/monitoring systems/i.test(searchResultLabel), "Search must return the monitoring systems page");
+  await searchInput.press("Escape");
+  await page.waitForFunction(() => [...document.querySelectorAll("body > div")].every(host => {
+    const input = host.shadowRoot?.querySelector('input[role="combobox"]');
+    if (!input) return true;
+    const dialog = input.closest("dialog");
+    return dialog && !dialog.open && input.getRootNode().activeElement !== input;
+  }));
+  await openSearch();
+  await searchInput.fill("comparing soil acoustic monitoring systems");
+  await searchResult.waitFor({ state: "visible" });
+  await Promise.all([
+    page.waitForURL(url => url.origin === baseUrl && url.pathname === new URL(searchDestination).pathname),
+    searchResult.click(),
+  ]);
+  // Instant navigation can update the URL before replacing the previous article.
+  await page.locator(".md-content__inner h1")
+    .filter({ hasText: /Comparing soil acoustic monitoring systems/i })
+    .waitFor({ state: "visible", timeout: 15000 });
+  const searchLifecycle = { query: "comparing soil acoustic monitoring systems", resultRoute: architectureRoute, resultLabel: searchResultLabel, reopenAndEscape: true };
+  await goto(questionRoute);
+
+  await page.locator(".layout-width-toggle").click();
+  await page.waitForFunction(() => document.documentElement.dataset.layoutWidth === "wide");
+  const wideHeaderControls = await inspectHeaderControls(page, { scheme: "default", label: "Wide header", hover: false });
+  const wideHeader = await measureHeader();
+  check(wideHeader.controlBackground === wideHeaderControls.snapshot.tokens["header-selected"], "Wide at rest must use its opaque selected semantic surface");
+  check(wideHeader.mode === "wide", "The width control must activate Wide mode");
+  check(wideHeader.controlPressed === "true", "Wide mode must expose aria-pressed=true");
+  check(
+    wideHeader.topic && wideHeader.heading && closeTo(wideHeader.topic.left, wideHeader.heading.left),
+    "The visible desktop title must align to the body-text left rail in Wide mode",
+  );
+  check(
+    wideHeader.control && wideHeader.content && closeTo(wideHeader.control.right, wideHeader.content.right),
+    "The width control must align to the body-content right rail in Wide mode",
+  );
+  check(
+    wideHeader.content && standardHeader.content && wideHeader.content.width > standardHeader.content.width,
+    "Wide mode must increase the central content width",
+  );
+  check(
+    wideHeader.controlBackground !== standardHeader.controlBackground || wideHeader.controlBoxShadow !== standardHeader.controlBoxShadow,
+    "Wide selection must have a visible selected-state treatment",
+  );
+
+  await goto(mermaidRoute);
+  await page.waitForSelector(".mermaid");
+  await page.waitForFunction(() => {
+    const diagram = document.querySelector(".mermaid");
+    return diagram && diagram.getBoundingClientRect().height > 40;
+  });
+  const mermaidHost = page.locator(".mermaid").first();
+  const mermaidHostGeometry = await mermaidHost.evaluate(element => ({
+    width: element.clientWidth,
+    height: element.clientHeight,
+    scrollWidth: element.scrollWidth,
+    scrollHeight: element.scrollHeight,
+    display: getComputedStyle(element).display,
+    justifyItems: getComputedStyle(element).justifyItems,
+  }));
+  const mermaidPixels = await screenshotPixels(await mermaidHost.screenshot());
+  check(mermaidHostGeometry.width > 200 && mermaidHostGeometry.height > 40, "Rendered Mermaid geometry must be non-empty");
+  check(mermaidHostGeometry.display === "grid" && mermaidHostGeometry.justifyItems === "safe center", "Rendered Mermaid surfaces must centre safely within their pane");
+  check(mermaidPixels.distinctColours > 24 && mermaidPixels.opaqueRatio > 0.95, "Rendered Mermaid pixels must be nonblank");
+  const samplingWorkflow = [{
+    nodeLabels: ["Record at known points and times", "Check noise and soil conditions",
+      "Compare repeat recordings", "Check the change against field observations",
+      "Decide whether to investigate a management effect"],
+    edgeCount: 4,
+    title: "Interpreting a change in soil sound",
+    description: "Compare repeat recordings with field observations before attributing a change to management.",
+  }];
+  const mermaidLayouts = {
+    representative: await inspectMermaidSourceLayouts(options.mermaidSources?.representative, "Monitoring systems", samplingWorkflow),
+    architecture: await inspectMermaidSourceLayouts(options.mermaidSources?.architecture, "Monitoring workflow", samplingWorkflow),
+  };
+  const architectureDesktop = await inspectMermaidPage({
+    route: architectureRoute,
+    pageName: "Monitoring workflow",
+    expectedCount: 1,
+    viewportName: "1256px desktop",
+  });
+
+  const mermaidProbe = await page.evaluate(async () => {
+    if (!window.mermaid?.render) throw new Error("Pinned local Mermaid runtime is unavailable");
+    const mount = document.createElement("div");
+    mount.style.position = "absolute";
+    mount.style.left = "-10000px";
+    document.body.append(mount);
+    try {
+      const rendered = await window.mermaid.render(
+        `runtime-contract-${Date.now()}`,
+        "flowchart LR\n  D1[Default one] --> D2[Default two]\n  A[Authority] ==>|governed relation| B[Derived]\n  B --> C[Source]\n  class A kb-canonical\n  class B kb-derived\n  class C kb-source",
+      );
+      mount.innerHTML = rendered.svg;
+      const text = mount.querySelector("svg text");
+      const node = mount.querySelector(".node rect");
+      const edge = mount.querySelector(".edge-thickness-normal:not(.edge-thickness-thick)");
+      const emphasisEdge = mount.querySelector(".edge-thickness-thick");
+      const edgeLabelBackground = mount.querySelector(".edgeLabel rect.background");
+      const canonicalNode = mount.querySelector(".node.kb-canonical rect");
+      const canonicalText = mount.querySelector(".node.kb-canonical text");
+      const derivedNode = mount.querySelector(".node.kb-derived rect");
+      const defaultNodes = [...mount.querySelectorAll(".node")]
+        .filter(nodeElement => !["kb-canonical", "kb-derived", "kb-source"].some(role => nodeElement.classList.contains(role)))
+        .map(nodeElement => nodeElement.querySelector("rect"))
+        .filter(Boolean);
+      const svg = mount.querySelector("svg");
+      return {
+        fontSize: text ? getComputedStyle(text).fontSize : "",
+        nodeRadiusX: node ? getComputedStyle(node).rx : "",
+        nodeRadiusY: node ? getComputedStyle(node).ry : "",
+        nodeStrokeWidth: node ? getComputedStyle(node).strokeWidth : "",
+        edgeStrokeWidth: edge ? getComputedStyle(edge).strokeWidth : "",
+        emphasisStrokeWidth: emphasisEdge ? getComputedStyle(emphasisEdge).strokeWidth : "",
+        edgeLabelFill: edgeLabelBackground ? getComputedStyle(edgeLabelBackground).fill : "",
+        edgeLabelFillOpacity: edgeLabelBackground ? getComputedStyle(edgeLabelBackground).fillOpacity : "",
+        canonicalFill: canonicalNode ? getComputedStyle(canonicalNode).fill : "",
+        canonicalTextFill: canonicalText ? getComputedStyle(canonicalText).fill : "",
+        derivedFill: derivedNode ? getComputedStyle(derivedNode).fill : "",
+        derivedDash: derivedNode ? getComputedStyle(derivedNode).strokeDasharray : "",
+        defaultNodeFills: defaultNodes.map(nodeElement => getComputedStyle(nodeElement).fill),
+        defaultNodeStrokes: defaultNodes.map(nodeElement => getComputedStyle(nodeElement).stroke),
+        width: svg?.getBoundingClientRect().width || 0,
+        height: svg?.getBoundingClientRect().height || 0,
+      };
+    } finally {
+      mount.remove();
+    }
+  });
+  check(mermaidProbe.width > 100 && mermaidProbe.height > 40, "Mermaid runtime probe must produce non-empty SVG geometry");
+  check(mermaidProbe.nodeRadiusX === "5px" && mermaidProbe.nodeRadiusY === "5px", "Mermaid nodes must render with the governed 5px radius");
+  check(mermaidProbe.nodeStrokeWidth === "1.75px", "Mermaid node borders must render at 1.75px");
+  check(mermaidProbe.edgeStrokeWidth === "1.75px", "Mermaid edges must render at 1.75px");
+  check(mermaidProbe.emphasisStrokeWidth === "3px", "Emphasized Mermaid relationships must render at 3px");
+  check(
+    mermaidProbe.edgeLabelFill === rgb(lightColors.background) && mermaidProbe.edgeLabelFillOpacity === "1",
+    "Mermaid edge labels must fully mask connecting lines with the governed diagram background",
+  );
+  check(mermaidProbe.canonicalFill === rgb(lightColors.accent), "Canonical Mermaid nodes must use the active solid accent");
+  check(mermaidProbe.canonicalTextFill === rgb(lightColors.accentContrast), "Canonical Mermaid labels must use accent-contrast text");
+  check(mermaidProbe.derivedFill === rgb(lightColors.surface), "Derived Mermaid nodes must use the surface fill");
+  check(mermaidProbe.derivedDash.includes("4px") && mermaidProbe.derivedDash.includes("3px"), "Derived Mermaid nodes must use a dashed boundary");
+  check(mermaidProbe.defaultNodeFills.length === 2, "Mermaid runtime probe must render two ordinary default nodes");
+  check(new Set(mermaidProbe.defaultNodeFills).size === 1, "Ordinary Mermaid nodes must share one default fill");
+  check(new Set(mermaidProbe.defaultNodeStrokes).size === 1, "Ordinary Mermaid nodes must share one default boundary");
+  check(mermaidProbe.defaultNodeFills[0] !== mermaidProbe.canonicalFill, "Ordinary Mermaid nodes must not inherit optional canonical-role styling");
+  const desktopMath = await inspectMermaidMath(page, { name: "desktop", capture: options.capture });
+
+  await goto(tableRoute);
+  await page.waitForSelector(".md-typeset table tbody td");
+  const tableTypography = await page.evaluate(() => {
+    const tableCell = document.querySelector(".md-typeset table tbody td");
+    const article = document.querySelector(".md-typeset");
+    return {
+      table: tableCell ? getComputedStyle(tableCell).fontSize : "",
+      body: article ? getComputedStyle(article).fontSize : "",
+    };
+  });
+  check(px(tableTypography.table) < px(tableTypography.body), "Table text must remain reduced relative to body text");
+  check(
+    closeTo(px(mermaidProbe.fontSize), px(tableTypography.table), 0.2),
+    `Mermaid text (${mermaidProbe.fontSize}) must equal rendered reduced table text (${tableTypography.table})`,
+  );
+
+  await goto(listRoute);
+  await page.waitForSelector(".md-content__inner ul:not(.task-list) > li");
+  const listGeometry = await page.evaluate(() => {
+    const list = document.querySelector(".md-content__inner ul:not(.task-list)");
+    const item = list?.querySelector(":scope > li");
+    const heading = document.querySelector(".md-content__inner h1");
+    return {
+      listLeft: list?.getBoundingClientRect().left ?? null,
+      headingLeft: heading?.getBoundingClientRect().left ?? null,
+      listStyle: list ? getComputedStyle(list).listStyleType : "",
+      listMargin: list ? getComputedStyle(list).marginInlineStart : "",
+      listPadding: list ? getComputedStyle(list).paddingInlineStart : "",
+      itemFont: item ? getComputedStyle(item).fontSize : "",
+      markerFont: item ? getComputedStyle(item, "::marker").fontSize : "",
+    };
+  });
+  check(
+    listGeometry.listLeft !== null && listGeometry.headingLeft !== null && closeTo(listGeometry.listLeft, listGeometry.headingLeft),
+    "The unordered-list box must align to the body-text rail",
+  );
+  check(listGeometry.listStyle === "square", "Unordered content lists must use square markers");
+  check(listGeometry.listMargin === "0px" && px(listGeometry.listPadding) > 0, "List indentation must be internal to the body-aligned list box");
+  check(closeTo(px(listGeometry.markerFont), px(listGeometry.itemFont), 0.2), "Square markers must render at list-text scale");
+  const desktopSourceLink = await inspectSourceLink("desktop", true);
+
+  await page.setViewportSize({ width: 768, height: 1024 });
+  const representativeTablet = await inspectMermaidPage({
+    route: mermaidRoute,
+    pageName: "Representative page",
+    expectedCount: 1,
+    viewportName: "768px tablet",
+  });
+  const architectureTablet = await inspectMermaidPage({
+    route: architectureRoute,
+    pageName: "Monitoring workflow",
+    expectedCount: 1,
+    viewportName: "768px tablet",
+  });
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobileNavigation = await inspectNavigation("mobile");
+  const mobileGoverningQuestion = await inspectGoverningQuestion(
+    "mobile",
+    questionRoute,
+    questionRouteIsGovernedRepetition ? canonicalGoverningQuestion : null,
+    questionRouteRepetitionCount,
+  );
+  const mobileGoverningQuestionRepetitions = await inspectGoverningQuestionRepetitionRoutes(
+    "mobile",
+    mobileGoverningQuestion,
+  );
+  const mobileSourceLink = await inspectSourceLink("mobile");
+  await goto(mermaidRoute);
+  await page.waitForSelector(".mermaid");
+  await page.waitForFunction(() => document.querySelector(".mermaid")?.getBoundingClientRect().height > 40);
+  const mobileMermaid = page.locator(".mermaid").first();
+  const mobileMermaidGeometry = await mobileMermaid.evaluate(element => {
+    const bounds = element.getBoundingClientRect();
+    const widthControl = document.querySelector(".layout-width-toggle");
+    return {
+      left: bounds.left,
+      right: bounds.right,
+      width: bounds.width,
+      height: bounds.height,
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+      scrollLeft: element.scrollLeft,
+      pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      widthControlDisplay: widthControl ? getComputedStyle(widthControl).display : "missing",
+    };
+  });
+  const mobileMermaidPixels = await screenshotPixels(await mobileMermaid.screenshot());
+  check(mobileMermaidGeometry.left >= -1 && mobileMermaidGeometry.right <= 391, "Mobile Mermaid pane must stay inside the viewport");
+  const mobileMermaidOverflow = Math.max(0, mobileMermaidGeometry.scrollWidth - mobileMermaidGeometry.clientWidth);
+  check(
+    mobileMermaidOverflow <= 61,
+    `Mobile representative Mermaid must keep contained horizontal overflow within the governed 60px limit: ${mobileMermaidOverflow}px actual versus 60px governed limit (+1px measurement tolerance)`,
+  );
+  check(Math.abs(mobileMermaidGeometry.scrollLeft - (mobileMermaidOverflow / 2)) <= 1, "Mobile representative Mermaid must open centred within its pane");
+  check(mobileMermaidGeometry.pageOverflow <= 1, "Mobile Mermaid page must not overflow horizontally");
+  check(mobileMermaidGeometry.widthControlDisplay === "none", "Desktop width control must not crowd the mobile header");
+  check(mobileMermaidPixels.distinctColours > 24, "Mobile Mermaid pixels must be nonblank");
+  const mobileMath = await inspectMermaidMath(page, { name: "mobile", capture: options.capture });
+  const architectureMobile = await inspectMermaidPage({
+    route: architectureRoute,
+    pageName: "Monitoring workflow",
+    expectedCount: 1,
+    viewportName: "390px mobile",
+    maxHorizontalOverflow: 60,
+  });
+  await goto(tableRoute);
+  const mobileTables = await inspectMobileTables();
+
+  const graphMetrics = {};
+  if (graphEnabled) {
+    const graphViews = [
+      { name: "2d", route: configuration.graph2dRoute, asset: "/assets/graphify/graph.html" },
+      { name: "3d", route: configuration.graph3dRoute, asset: "/assets/graphify/graph-3d.html" },
+    ];
+    const viewports = [
+      { name: "desktop", width: 1256, height: 718 },
+      { name: "mobile", width: 390, height: 844 },
+    ];
+
+    for (const viewport of viewports) {
+      graphMetrics[viewport.name] = {};
+      for (const view of graphViews) {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await goto(view.route, "domcontentloaded");
+        await page.waitForSelector(".graph-frame", { state: "attached" });
+        await page.locator(".graph-frame").evaluate(element => element.scrollIntoView({ block: "center" }));
+        await page.waitForFunction(() => {
+          const frameElement = document.querySelector(".graph-frame");
+          const bounds = frameElement?.getBoundingClientRect();
+          return Boolean(bounds && bounds.width > 250 && bounds.height > 300);
+        });
+        let frame = null;
+        for (let attempt = 0; attempt < 80 && !frame; attempt += 1) {
+          frame = page.frames().find(candidate => candidate.url().includes(view.asset));
+          if (!frame) await page.waitForTimeout(100);
+        }
+        check(Boolean(frame), `${view.name.toUpperCase()} Graphify iframe must load at ${viewport.name} width`);
+        if (!frame) continue;
+        await frame.waitForSelector("canvas", { timeout: 15000 });
+        const canvas = frame.locator("canvas").first();
+        const canvasGeometry = await canvas.evaluate(element => ({
+          width: element.clientWidth,
+          height: element.clientHeight,
+          pixelWidth: element.width,
+          pixelHeight: element.height,
+        }));
+        const frameGeometry = await page.locator(".graph-frame").evaluate(element => ({
+          width: element.clientWidth,
+          height: element.clientHeight,
+        }));
+        const controls = await frame.evaluate(name => {
+          const selector = name === "2d" ? "#sidebar" : "#panel";
+          const control = document.querySelector(selector);
+          const search = document.querySelector('input[type="search"], #search');
+          const bounds = control?.getBoundingClientRect();
+          return {
+            controlVisible: Boolean(control && bounds && bounds.width > 0 && bounds.height > 0),
+            controlFits: Boolean(bounds && bounds.left >= -1 && bounds.right <= innerWidth + 1 && bounds.top >= -1 && bounds.bottom <= innerHeight + 1),
+            searchVisible: Boolean(search && search.getBoundingClientRect().width > 0),
+            overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          };
+        }, view.name);
+        const pixels = await waitForDrawnGraphCanvas(frame, view.name, viewport.name);
+        check(canvasGeometry.width > 250 && canvasGeometry.height > 300, `${view.name.toUpperCase()} Graphify canvas must retain usable ${viewport.name} dimensions`);
+        check(closeTo(canvasGeometry.width, frameGeometry.width, 3) && closeTo(canvasGeometry.height, frameGeometry.height, 3), `${view.name.toUpperCase()} Graphify canvas must fill its ${viewport.name} frame`);
+        check(controls.controlVisible && controls.controlFits && controls.searchVisible, `${view.name.toUpperCase()} Graphify controls must remain usable at ${viewport.name} width`);
+        check(controls.overflow <= 1, `${view.name.toUpperCase()} Graphify iframe must not overflow at ${viewport.name} width`);
+        const pageOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        check(pageOverflow <= 1, `${view.name.toUpperCase()} Graphify page must not overflow at ${viewport.name} width`);
+        graphMetrics[viewport.name][view.name] = {
+          canvas: canvasGeometry,
+          pixels,
+          controls,
+        };
+      }
+    }
+  }
+
+  // The original journey above remains the full light regression contract.
+  // This additional matrix verifies native palette state, persistence and
+  // inherited surfaces without duplicating the renderer or its storage format.
+  const paletteMetrics = {};
+  for (const viewport of [
+    { name: "desktop", width: 1440, height: 1000 },
+    { name: "mobile", width: 390, height: 844 },
+  ]) {
+    paletteMetrics[viewport.name] = {};
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    for (const scheme of ["default", "slate"]) {
+      const label = `${scheme}/${viewport.name}`;
+      const otherScheme = scheme === "default" ? "slate" : "default";
+      await goto(questionRoute);
+      if (viewport.name === "desktop" && await page.locator(".layout-width-toggle").getAttribute("aria-pressed") !== "true") await page.locator(".layout-width-toggle").click();
+      // Save through the visible native action, then inspect the restored state
+      // before clicking or focusing a radio can conceal a restoration defect.
+      await selectNativeScheme(scheme);
+      await page.reload({ waitUntil: "networkidle" });
+      check(await page.locator("body").getAttribute("data-md-color-scheme") === scheme, `${label} selection must survive reload`);
+      const restored = await inspectPaletteKeyboard(scheme, viewport.name, "reload");
+      await goto(architectureRoute);
+      check(await page.locator("body").getAttribute("data-md-color-scheme") === scheme, `${label} selection must survive document navigation`);
+      const navigated = await inspectPaletteKeyboard(scheme, viewport.name, "document navigation");
+      const governing = await inspectGoverningQuestion(label, questionRoute,
+        questionRouteIsGovernedRepetition ? canonicalGoverningQuestion : null, questionRouteRepetitionCount);
+      const headerControls = await inspectHeaderControls(page, { scheme, label });
+      const content = await inspectThemeContrast(page, [".md-header", ".md-search__button", ".md-content__inner h1", ".md-typeset > p", ".md-typeset blockquote.governing-question p", ".md-typeset a"]);
+      checkThemeContrast(content, `${label} header and content`);
+      check(content.bodyBackground === content.tokens.background, `${label} body must paint its active background token`);
+
+      await goto(tableRoute);
+      await page.waitForSelector(".md-typeset table tbody td");
+      const table = await inspectThemeContrast(page, [".md-typeset table th", ".md-typeset table td", ".md-typeset table a"]);
+      checkThemeContrast(table, `${label} table`);
+      const mobileScroll = viewport.name === "mobile" ? await inspectMobileTables() : null;
+
+      await goto(mermaidRoute);
+      const diagram = await inspectRenderedMermaidContrast();
+      check(diagram.nodes.length > 0 && diagram.nodes.every(node => node.textRatio >= 4.5 && node.boundaryRatio >= 3), `${label} rendered Mermaid labels and node boundaries must retain contrast`);
+      check(diagram.edgeRatios.length > 0 && diagram.edgeRatios.every(ratio => ratio >= 3), `${label} rendered Mermaid relationships must retain contrast`);
+      if (options.capture) await options.capture(`palette-${scheme}-${viewport.name}`, await page.screenshot({ fullPage: true }));
+
+      await openSearch();
+      await searchInput.fill("comparing soil acoustic monitoring systems");
+      await searchResult.waitFor({ state: "visible" });
+      const search = await inspectThemeContrast(page, ['input[role="combobox"]', 'a[role="option"]', 'a[role="option"] li', 'dialog[open] [role="status"]', 'a[role="option"] .p', 'dialog[open] mark', 'dialog[open] code']);
+      checkThemeContrast(search, `${label} open search`);
+      check(search.entries.some(entry => entry.selector === 'a[role="option"]'), `${label} search must expose readable results`);
+      await searchInput.press("Escape");
+
+      const themedGraphs = {};
+      if (graphEnabled) for (const view of [
+        { name: "2d", route: configuration.graph2dRoute, asset: "/assets/graphify/graph.html" },
+        { name: "3d", route: configuration.graph3dRoute, asset: "/assets/graphify/graph-3d.html" },
+      ]) {
+        await goto(view.route);
+        await page.locator(".graph-frame").waitFor({ state: "attached" });
+        const frame = await (await page.locator(".graph-frame").elementHandle()).contentFrame();
+        check(Boolean(frame && frame.url().includes(view.asset)), `${label} ${view.name} graph frame must load`);
+        if (!frame) continue;
+        await frame.waitForSelector("canvas");
+        await frame.waitForFunction(expected => window.graphTheme?.current?.scheme === expected && document.body.dataset.mdColorScheme === expected, scheme);
+        const originalTimeOrigin = await frame.evaluate(() => performance.timeOrigin);
+        // Switch an already-running frame in both directions. A reload would
+        // lose its state and would fail the timeOrigin identity check.
+        await selectNativeScheme(otherScheme);
+        await frame.waitForFunction(expected => window.graphTheme?.current?.scheme === expected && document.body.dataset.mdColorScheme === expected, otherScheme);
+        await selectNativeScheme(scheme);
+        await frame.waitForFunction(expected => window.graphTheme?.current?.scheme === expected && document.body.dataset.mdColorScheme === expected, scheme);
+        const selectors = view.name === "2d" ? ["#search", "#info-content .empty", "#stats", ".legend-count", ".legend-label", "#legend-controls label"]
+          : ["#panel h1", "#panel .meta", "#panel label", "#panel input", "#info .empty", "#stats", ".scene-nav-info"];
+        const graph = await inspectThemeContrast(frame, selectors, view.name);
+        checkThemeContrast(graph, `${label} ${view.name} graph`);
+        check(graph.graph.controlBoundaries.length > 0 && graph.graph.controlBoundaries.every(control => control.ratio >= 3), `${label} graph search and unchecked filter boundaries must retain 3:1 contrast`);
+        check(graph.graph?.timeOrigin === originalTimeOrigin, `${label} ${view.name} graph must update its theme without reloading`);
+        check(graph.graph?.theme?.scheme === scheme && graph.graph.sceneMatches, `${label} ${view.name} graph scene must follow the native palette`);
+        if (view.name === "2d") {
+          check(graph.graph.labelsMinimum >= 4.5 && graph.graph.checkboxRatio >= 3, `${label} 2D graph canvas labels and checkbox mark must remain readable`);
+          // The governed mobile graph intentionally omits the desktop legend.
+          // Check filtering where it is offered, and exercise the visible
+          // search/details workflow at both viewport sizes.
+          if (viewport.name === "desktop") {
+            await frame.locator(".legend-cb").first().uncheck();
+            const filtered = await inspectThemeContrast(frame, [".legend-item.dimmed .legend-label"], view.name);
+            checkThemeContrast(filtered, `${label} filtered 2D graph`);
+            check(filtered.graph.checkboxRatio >= 3, `${label} 2D graph mixed checkbox must retain contrast`);
+            check(filtered.graph.controlBoundaries.every(control => control.ratio >= 3), `${label} 2D graph unchecked filter boundaries must retain 3:1 contrast`);
+            await frame.locator(".legend-cb").first().check();
+            graph.filtered = filtered;
+          }
+          await frame.locator("#search").fill("monitoring");
+          await frame.locator(".search-item").first().waitFor({ state: "visible" });
+          const results = await inspectThemeContrast(frame, [".search-item"], view.name);
+          checkThemeContrast(results, `${label} 2D graph search`);
+          await frame.locator(".search-item").first().click();
+          const selected = await inspectThemeContrast(frame, ["#info-content .field", "#info-content .field b", ".neighbor-link"], view.name);
+          checkThemeContrast(selected, `${label} 2D graph selected details`);
+          graph.search = results;
+          graph.selected = selected;
+        }
+        themedGraphs[view.name] = graph;
+      }
+      paletteMetrics[viewport.name][scheme] = { restored, navigated, persistedReload: true, persistedNavigation: true,
+        governing, headerControls, content, table, mobileScroll, diagram, search, graph: themedGraphs };
+    }
+  }
+
+  const prohibitedCdnHosts = ["unpkg.com", "cdn.jsdelivr.net", "cdnjs.cloudflare.com"];
+  const cdnRequests = requests.filter(requestUrl => prohibitedCdnHosts.some(host => requestUrl.includes(`//${host}/`)));
+  const localAssets = ["/assets/vendor/mermaid.min.js"];
+  if (graphEnabled) localAssets.push("/assets/vendor/vis-network.min.js", "/assets/vendor/3d-force-graph.min.js");
+  for (const asset of localAssets) {
+    check(requests.some(requestUrl => requestUrl.startsWith(baseUrl) && requestUrl.split(/[?#]/)[0].endsWith(asset)), `Browser contract did not observe local runtime ${asset}`);
+  }
+  check(cdnRequests.length === 0, `Production browser runtime must not request public CDNs: ${cdnRequests.join(", ")}`);
+  check(localResponseFailures.length === 0, `Local browser requests failed: ${localResponseFailures.join("; ")}`);
+  check(pageErrors.length === 0, `Browser page errors occurred: ${pageErrors.join("; ")}`);
+  const offOriginRequests = [...new Set(resourceRequests.filter(({ url, type }) => /^https?:/u.test(url)
+    && new URL(url).origin !== baseUrl
+    && (["script", "xhr", "fetch", "websocket"].includes(type) || new URL(url).pathname.endsWith("/sitemap.xml")))
+    .map(({ url }) => url))];
+  check(offOriginRequests.length === 0, `Browser fetched code, data or sitemaps outside the served build: ${offOriginRequests.join("; ")}`);
+  check(consoleErrors.length === 0, `Browser console errors occurred: ${consoleErrors.join("; ")}`);
+
+  if (failures.length) throw new Error(`Runtime browser contract failed:\n- ${failures.join("\n- ")}`);
+
+  return {
+    ok: true,
+    search: searchLifecycle,
+    header: {
+      standardLeftDelta: standardHeader.topic.left - standardHeader.heading.left,
+      standardRightDelta: standardHeader.control.right - standardHeader.content.right,
+      wideLeftDelta: wideHeader.topic.left - wideHeader.heading.left,
+      wideRightDelta: wideHeader.control.right - wideHeader.content.right,
+    },
+    typography: {
+      body: tableTypography.body,
+      table: tableTypography.table,
+      mermaid: mermaidProbe.fontSize,
+    },
+    tables: {
+      mobile: mobileTables,
+    },
+    governingQuestion: {
+      desktop: desktopGoverningQuestion,
+      mobile: mobileGoverningQuestion,
+      repetitionRouteCount: governingQuestionRepetitionRoutes.length,
+      repetitionRoutes: governingQuestionRepetitionRoutes,
+      repetitions: {
+        desktop: desktopGoverningQuestionRepetitions,
+        mobile: mobileGoverningQuestionRepetitions,
+      },
+    },
+    navigation: {
+      desktop: desktopNavigation,
+      mobile: mobileNavigation,
+    },
+    sourceLinks: {
+      desktop: desktopSourceLink,
+      mobile: mobileSourceLink,
+    },
+    mermaid: {
+      desktop: mermaidPixels,
+      mobile: mobileMermaidPixels,
+      layouts: mermaidLayouts,
+      architecture: {
+        desktop: architectureDesktop,
+        tablet: architectureTablet,
+        mobile: architectureMobile,
+      },
+      representativeTablet,
+      math: { desktop: desktopMath, mobile: mobileMath },
+      nodeRadius: mermaidProbe.nodeRadiusX,
+      strokeWidth: mermaidProbe.nodeStrokeWidth,
+    },
+    graph: graphMetrics,
+    palettes: paletteMetrics,
+    localRuntimeAssets: localAssets,
+    requestCount: requests.length,
+  };
+}
+
+// Use the shipped Mermaid API without changing its configuration. Sequence
+// notes exercise native MathML while the adapter retains SVG flowchart labels.
+export async function inspectMermaidMath(page, { name = "focused", capture } = {}) {
+  const origin = new URL(page.url()).origin;
+  const externalRequests = [];
+  const blockExternal = async route => {
+    const url = route.request().url();
+    if (/^https?:/u.test(url) && new URL(url).origin !== origin) {
+      externalRequests.push(url);
+      await route.abort();
+    } else await route.continue();
+  };
+  const marker = `math-contract-${name}`;
+  await page.route("**/*", blockExternal);
+  try {
+    const metrics = await page.evaluate(async marker => {
+      if (!window.mermaid?.render) throw new Error("Pinned local Mermaid runtime is unavailable for math qualification");
+      const article = document.querySelector(".md-content__inner");
+      if (!article) throw new Error("Math qualification requires the rendered content rail");
+      const mount = document.createElement("div");
+      mount.dataset.mathContractProbe = marker;
+      article.append(mount);
+      const title = "Mathematical compatibility probe";
+      const description = "One half and the integral of x squared from zero to one.";
+      const source = String.raw`sequenceDiagram
+accTitle: Mathematical compatibility probe
+accDescr: One half and the integral of x squared from zero to one.
+participant A as Calculus
+Note over A: $$\frac{1}{2}$$
+Note over A: $$\int_0^1 x^2\,dx$$`;
+      const normal = document.createElement("div");
+      normal.innerHTML = (await window.mermaid.render(`${marker}-normal`, source)).svg;
+      mount.append(normal);
+      const svg = normal.querySelector("svg");
+      const rect = element => {
+        const bounds = element.getBoundingClientRect();
+        return { left: bounds.left, right: bounds.right, top: bounds.top, bottom: bounds.bottom,
+          width: bounds.width, height: bounds.height };
+      };
+      const within = (inner, outer) => inner.left >= outer.left - 1 && inner.right <= outer.right + 1
+        && inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1;
+      const svgBounds = rect(svg);
+      const math = [...normal.querySelectorAll("math")].map(element => {
+        const bounds = rect(element);
+        const foreignObject = element.closest("foreignObject");
+        return {
+          namespace: element.namespaceURI,
+          text: element.textContent,
+          bounds,
+          visible: element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
+            && !element.closest('[aria-hidden="true"]'),
+          contained: within(bounds, svgBounds) && Boolean(foreignObject && within(bounds, rect(foreignObject))),
+          fraction: Boolean(element.querySelector("mfrac")),
+          integral: [...element.querySelectorAll("mo")].some(operator => operator.textContent === "∫"),
+          powers: element.querySelectorAll("msup, msubsup").length,
+        };
+      });
+      const namedText = attribute => (svg.getAttribute(attribute) ?? "").split(/\s+/u)
+        .map(id => normal.querySelector(`[id=${JSON.stringify(id)}]`)?.textContent ?? "").join(" ");
+      const accessibleTitle = namedText("aria-labelledby");
+      const accessibleDescription = namedText("aria-describedby");
+      const untrusted = [];
+      for (const [kind, expression] of [
+        ["link", String.raw`\href{javascript:alert(1)}{untrusted}`],
+        ["image", String.raw`\includegraphics{https://math-probe.invalid/image.png}`],
+      ]) {
+        const container = document.createElement("div");
+        const rendered = await window.mermaid.render(`${marker}-${kind}`,
+          `sequenceDiagram\nparticipant A as Untrusted input\nNote over A: $$${expression}$$`);
+        container.innerHTML = rendered.svg;
+        mount.append(container);
+        const activeAttributes = [...container.querySelectorAll("*")].flatMap(element => [...element.attributes]
+          .filter(attribute => /^(?:on|href$|xlink:href$|src$|srcset$|action$|formaction$)/iu.test(attribute.name))
+          .map(attribute => `${element.tagName}.${attribute.name}=${attribute.value}`));
+        untrusted.push({ kind, mathCount: container.querySelectorAll("math").length,
+          activeElements: container.querySelectorAll("a, img, image, script, iframe, object, embed").length,
+          activeAttributes, visibleLiteral: container.querySelector("math")?.textContent ?? "" });
+        container.remove();
+      }
+      return {
+        viewport: { width: innerWidth, height: innerHeight },
+        svg: svgBounds, math,
+        accessible: { role: svg.getAttribute("role"), title: accessibleTitle, description: accessibleDescription,
+          exact: accessibleTitle === title && accessibleDescription === description },
+        pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        railContained: svgBounds.left >= article.getBoundingClientRect().left - 1
+          && svgBounds.right <= article.getBoundingClientRect().right + 1,
+        untrusted,
+      };
+    }, marker);
+    const require = (condition, message) => {
+      if (!condition) throw new Error(`${name} Mermaid math contract: ${message}`);
+    };
+    require(metrics.svg.width > 100 && metrics.svg.height > 40, "rendered diagram must have nonempty geometry");
+    require(metrics.math.length === 2, "both expressions must render as native MathML");
+    require(metrics.math.every(item => item.namespace === "http://www.w3.org/1998/Math/MathML"
+      && item.visible && item.contained && item.bounds.width > 4 && item.bounds.height > 10),
+    "MathML must remain visible and contained in its measured diagram labels");
+    require(metrics.math[0].fraction && metrics.math[0].text === "12", "fraction semantics must preserve numerator and denominator");
+    require(metrics.math[1].integral && metrics.math[1].powers === 2, "integral limits and exponent must retain MathML semantics");
+    require(metrics.accessible.exact && metrics.accessible.role?.includes("graphics-document"),
+      "diagram title, description and accessible role must survive math rendering");
+    require(metrics.railContained && metrics.pageOverflow <= 1, "math diagram must fit its desktop or mobile content rail");
+    require(metrics.untrusted.every(item => item.mathCount === 1 && item.activeElements === 0
+      && item.activeAttributes.length === 0 && item.visibleLiteral.includes(item.kind === "link" ? "href" : "includegraphics")),
+    "untrusted link and image commands must remain inert visible math, without executable attributes");
+    if (capture) await capture(`math-${name}.png`, await page.locator(`[data-math-contract-probe="${marker}"]`).screenshot());
+    // Flush requests caused by layout before releasing the temporary network guard.
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    require(externalRequests.length === 0, `math rendering attempted external resources: ${externalRequests.join(", ")}`);
+    return { ...metrics, externalRequests };
+  } finally {
+    await page.locator(`[data-math-contract-probe="${marker}"]`).evaluateAll(elements => elements.forEach(element => element.remove()));
+    await page.unroute("**/*", blockExternal);
+  }
+}
+
+// Kept self-contained so the same DOM inspection supports focused browser checks.
+export const inspectSourceCitationElements = elements => {
+  const visible = element => element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
+    && !/rgba\([^)]*,\s*0(?:\.0+)?\)$/.test(getComputedStyle(element).color);
+  const links = elements.filter(element => !element.querySelector("code, pre") && (
+    element.dataset.sourceId || /^(?:SRC-)?\d{3,}(?:: .+)?$/.test(element.textContent.trim())
+  ));
+  const probe = links[0];
+  const hiddenFixtures = [];
+  if (probe) {
+    const originalStyle = probe.getAttribute("style");
+    const originalParentStyle = probe.parentElement.getAttribute("style");
+    const inspectHidden = (name, element, property, value) => {
+      const saved = element.getAttribute("style");
+      // Probe the completed hidden state, not a theme transition frame.
+      element.setAttribute("style", `${saved ?? ""}; transition: none !important; ${property}: ${value} !important`);
+      const style = getComputedStyle(probe);
+      hiddenFixtures.push({ name, pass: !visible(probe), color: style.color,
+        opacity: style.opacity, parentOpacity: getComputedStyle(probe.parentElement).opacity,
+        visibility: style.visibility });
+      element.setAttribute("style", `${saved ?? ""}; transition: none !important`);
+      // Resolve the restored value before re-enabling native transitions.
+      getComputedStyle(element).getPropertyValue(property);
+      if (saved === null) element.removeAttribute("style"); else element.setAttribute("style", saved);
+    };
+    inspectHidden("citation opacity: 0", probe, "opacity", "0");
+    inspectHidden("citation visibility: hidden", probe, "visibility", "hidden");
+    inspectHidden("citation color: transparent", probe, "color", "transparent");
+    inspectHidden("parent opacity: 0", probe.parentElement, "opacity", "0");
+    if (originalStyle === null) probe.removeAttribute("style"); else probe.setAttribute("style", originalStyle);
+    if (originalParentStyle === null) probe.parentElement.removeAttribute("style"); else probe.parentElement.setAttribute("style", originalParentStyle);
+  }
+  return { hiddenFixtures, rows: links.map(element => {
+    element.focus();
+    const group = element.parentElement;
+    const box = group.getBoundingClientRect();
+    return {
+      id: element.dataset.sourceId || "",
+      label: element.textContent.trim(),
+      accessibleName: element.getAttribute("aria-label"),
+      href: element.href,
+      tabIndex: element.tabIndex,
+      focused: document.activeElement === element,
+      visible: visible(element),
+      before: getComputedStyle(element, "::before").content,
+      after: getComputedStyle(element, "::after").content,
+      superscript: group.tagName === "SUP" && getComputedStyle(group).verticalAlign === "super",
+      groupText: group.textContent.trim(),
+      groupExpected: [...group.querySelectorAll("a")].map(link => link.dataset.sourceId?.slice(4)).join(", "),
+      groupContained: box.width <= document.documentElement.clientWidth,
+      pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  }) };
+};

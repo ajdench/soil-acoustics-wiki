@@ -1,0 +1,65 @@
+[project]
+site_name = "Soil Acoustics"
+site_description = "Research on Soil Acoustics Ltd, its meter, and the evidence for interpreting soil sounds."
+site_url = "http://127.0.0.1:8036/"
+docs_dir = "docs"
+site_dir = "site"
+extra_css = ["assets/graph.css", "assets/content.css", "assets/layout-width.css", "assets/theme.css"]
+extra_javascript = ["assets/vendor/mermaid.min.js", "assets/mermaid-adapter.js", "assets/wiki.js", "assets/layout-width.js"]
+nav = [
+  {"Overview" = "index.md"},
+  {"Company and product" = "company-and-product.md"},
+  {"Research evidence" = "research-evidence.md"},
+  {"Monitoring systems" = "monitoring-systems.md"},
+  {"Website and field guide" = "website-review.md"},
+  {"Knowledge graph" = [
+    {"Graph guide" = "graph/index.md"},
+    {"2D graph" = "graph/two-dimensional.md"},
+    {"3D graph" = "graph/three-dimensional.md"}
+  ]},
+  {"Evidence" = [
+    {"Sources" = "sources.md"},
+    {"Evidence matrix" = "evidence-matrix.md"},
+    {"Validation queue" = "validation-queue.md"},
+    {"Research log" = "log.md"},
+    {"Project status" = "project/status.md"}
+  ]},
+  {"LLM Wiki" = [
+    {"Agent entry point" = "llm-wiki/index.md"},
+    {"Context map" = "llm-wiki/context-map.md"},
+    {"Maintenance" = "llm-wiki/maintenance.md"},
+    {"Standard proposals" = "llm-wiki/standard-proposals.md"}
+  ]}
+]
+
+[project.markdown_extensions]
+admonition = {}
+attr_list = {}
+footnotes = {}
+source_citations = { register_file = "docs/sources.md" }
+tables = {}
+"pymdownx.details" = {}
+
+[[project.markdown_extensions."pymdownx.superfences".custom_fences]]
+name = "mermaid"
+class = "mermaid"
+format = "pymdownx.superfences.fence_code_format"
+
+[project.theme]
+custom_dir = "overrides"
+font = false
+features = ["navigation.instant", "navigation.top", "search.highlight"]
+
+[[project.theme.palette]]
+scheme = "default"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+scheme = "slate"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to light mode"

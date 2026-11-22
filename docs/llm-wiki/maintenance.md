@@ -1,0 +1,52 @@
+---
+type: "Maintenance Protocol"
+title: "Maintenance"
+description: "Bounded maintenance workflow for Soil Acoustics."
+status: "draft"
+---
+
+# Maintenance
+
+1. Inspect the target manifest, instructions, evidence, and current version-control state.
+2. Query Graphify first when a current graph exists, then fall back to canonical target sources.
+3. Preserve stronger verified local patterns and unknown OKF fields.
+4. Update sources, concepts, evidence, links, and logs together. Read the manifest's `roles.authoring_policy` path, or `AUTHORING.md` when no path is mapped, and apply the DenchCo ASD-STE100-inspired 80% house style to new original English Wiki prose. 80% is a pragmatic aim, not a computed score or a claim of ASD-STE100 compliance. Review meaning and source fidelity before style, preserve protected text and necessary technical terms, and record material exceptions with their scope and reason. Follow explicit user instructions and stricter applicable local policy; do not bulk-rewrite existing prose or change consumer pins to apply the default.
+5. For a persistent preview, serialize the shared-register reload and live-listener probe and publish the reservation atomically before changing the endpoint; preserve other services, exact-match all twelve governed registration fields, require the installed user-service definition and loaded job to match the generated contract, publish the exact identity marker, and use the fail-closed `service:preview` handoff at the canonical URL. Live service status is maintainer-only evidence.
+6. Rebuild generated outputs and run every applicable check.
+7. Review Git and Jujutsu state.
+8. Before the development turn ends, record all persistent changes from that turn in a JJ commit. Disclose failed or unrun required checks in the commit and final response; never leave turn changes only in the working copy because they were judged insufficiently “substantive.” Do not create an empty commit when the turn changed no persistent files.
+9. For a potentially reusable user-authored improvement, keep the verified implementation project-owned and commit its full Git revision, optional JJ identity, and pinned Standard revision to a tracked `standard-proposals/` record after the local implementation phase is complete.
+10. Validate the record offline, including direct-state metadata, prerequisites, ordering, and terminal workflow-v1 transitions. Prepare and inspect a disposable scrubbed payload containing the problem, outcome, reuse class, affected contract, dependencies and fallback, bounded evidence, accessibility/browser implications, regression fixture, and migration impact.
+11. Scrub private paths, credentials, personal or confidential data, restricted evidence, vulnerability detail, and unlicensed material. Bind explicit approval to the exact payload/form digest. The CLI may fail-closed check and open the governed form but never submits or uploads; the user submits.
+12. Record unambiguous issue linkage, explicit Standard decision, immutable release mapping, and optional consumer adoption as independent authorised JJ phases. Release evidence requires exact registry bytes at the full recorded revision, strict release-to-registry ancestry, the exact public non-draft immutable release, and exact tag resolution. Never use the Standard's single historical bridge for new consumer work. A closed issue is not acceptance, and an accepted or released change does not update this project's pin automatically.
+
+Standard upgrades use an immutable source revision and a reviewable diff. Equal version labels do not prove equal revisions. Upgrades never replace local topic content silently, and filing a proposal does not change the pinned revision or authorize migration.
+
+## Development response navigation
+
+- Resolve this Wiki's configured canonical URL from `capabilities.human_wiki_url` in `.wiki-standard.yaml` or its registered managed-preview endpoint. Before displaying a user-facing Human or LLM Wiki destination in a development response, verify that absolute HTTP(S) route against the live service.
+- Do not substitute `file://` URLs, IDE or editor URLs, local-filesystem Markdown links, or repository-relative Markdown links for Wiki navigation. If the canonical service or route is unavailable, report that state rather than falling back to a file link.
+- Use a plain repository path only to identify an implementation artifact that has no Wiki route, and never present that path as Wiki navigation.
+- The checker covers Markdown destinations, entity-decoded HTML `a`/`area` links, and plain GFM-autolinked HTTP(S) text while excluding masked code/comments and images from navigation.
+- When a draft response is captured, run `npm run response:links:check -- --base-url <canonical-url>` and add `--managed-live` for a managed local Wiki. That mode requires exact service status, canonical URL equality, and HTTP 200 for every displayed route. It cannot intercept a response the host never exposes, so `STD-VAL-007` remains in force.
+
+## Reader source links
+
+- Use numeric superscript citations whose numbers come from stable source identities, with leading zeroes and full accessible identities retained. Preserve explanatory notes and canonical Markdown.
+- Add a stable anchor to every mapped source-register row. Link each visible source identity independently to its exact internal row; link every list member and only the displayed endpoints of a compact range.
+- Use a registered primary URL when prose directly links a specifically named official authority, guidance, or publication. Do not add decorative links to generic institution names.
+- Use any supplied source-link rewriter only as an optional reviewable aid. The required lint and browser checks reject bare or combined identities, wrong rows or fragments, unknown identities, unregistered named-authority URLs, inaccessible links, lost visible citation grammar, and broken destination journeys.
+
+## Canonical governing question
+
+- When one canonical governing question is declared, map its authoritative source and maintain a finite `reader_sources` set in the manifest capability contract.
+- Run exact-text repetition lint after editing a bounded reader source. Every verbatim repetition uses the same governed callout; paraphrases, unrelated quotations, and historical/source records outside the bounded set remain ordinary content.
+- Exercise every discovered repetition route in the built-output desktop/mobile browser contract. A subject-empty or question-free Wiki records `DKBWS-HUMAN-004` as not applicable and invents nothing.
+
+Complete the requested scope before recommending more work. At the end of every development cycle, assess the Wiki's continuing subject, governing question when declared, evidence and content maturity. Prioritise subject content and evidence work; address a failed or unrun required check before optional content work. Include no more than three prioritised Next Steps. Each must fit one follow-up pass and state `Proposed update:`, `Why it matters:` and `Done when:`. Suggestions are recommendations, not continuation authority. Use project status, the validation queue and relevant handoff evidence to exclude completed work. Do not reopen bounded, parked or evidence-blocked work without new evidence, a due scheduled recheck or explicit user instruction. Parked work retains `blocked_by`, `reopen_when` and `last_checked`. If no grounded content update or required follow-up qualifies, state `No further grounded content update is available.` Never invent filler. Check captured drafts with `response:next-steps:check` when available; format checks do not prove grounding or intercept uncaptured responses.
+
+## Check the installed stack
+
+For an explicit Standard update check, run `npm run standard:stack -- check . --json`. Keep the installed release tag and full revision unchanged while comparing the available release. The command makes read-only network requests and never installs, repins or migrates. If verification evidence is unavailable, report that state rather than calling the Wiki current.
+
+An authorised update carries the reviewed tools, dependency locks, configuration and checks together. Preserve local content, deviations and unknown fields. Run complete target verification before recording adoption. First builds select the latest verified immutable release with `npm run standard:stack -- resolve --json`; a development commit is not an automatic fallback.
