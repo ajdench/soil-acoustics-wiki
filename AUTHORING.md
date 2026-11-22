@@ -20,6 +20,10 @@ Use the DenchCo ASD-STE100-inspired 80% house style for all new original English
 
 For a subject-bearing Wiki, consider establishing the reader's task, giving a short answer to an agreed question, then adding explanation, worked application and exact reference. Review that route manually while preserving source meaning, exact questions, conditions and uncertainty. This is an editorial method, not a new conformance requirement or readability score. Do not invent audience facts, questions, answers, examples or sources for a subject-empty Wiki.
 
+### Telling the company story
+
+The overview follows one question from a field visit through the history of the meter, what a buyer receives and what the published experiments actually measured. Introduce a real field case with its source. Return to it after comparing the scientific evidence and the alternatives. Name any proposed field measurement as a proposal. A memorable case can carry more weight with a reader than a larger dataset, so explain which conclusions each supports. [Dahlstrom, *Using narratives and storytelling to communicate science with nonexpert audiences* (2014)](https://doi.org/10.1073/pnas.1320645111)
+
 ## Meaning and protected text
 
 Keep quotations, code, commands, identifiers, URLs, official names, registered source titles, units, and necessary technical terms intact. Preserve the exact canonical governing question and its required callout. Do not restyle copied source text as if it were original prose.

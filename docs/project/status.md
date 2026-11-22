@@ -13,7 +13,7 @@ Explain what Soil Acoustics does, who runs the company, how the meter developed 
 
 ## Current state
 
-The [reader overview](../index.md) brings together the company record, the field guide, the independent science and the [systems comparison](../monitoring-systems.md). The [evidence matrix](../evidence-matrix.md) records which conclusions have support from field measurements and which rely on a supplier's description. Prices and retail availability have a review date of 22 November 2026.
+The [reader overview](../index.md) brings together the company record, the field guide, the independent science and the [systems comparison](../monitoring-systems.md). The [evidence matrix](../evidence-matrix.md) records which conclusions have support from field measurements and which rely on a supplier's description. The review now follows the Newhouse Farm case and compares evidence from contrasting woodlands, single-species experiments and field counts. Developer-reported results at Denton Reserve identify variation between sites. The published account omits the index used and the animal counts needed to interpret it. A planned forest trial names the commercial meter. Its public description sets out a method without reporting results. Prices and retail availability have a review date of 22 November 2026. [SRC-010](../sources.md#src-010), [SRC-019](../sources.md#src-019), [SRC-045](../sources.md#src-045), [SRC-046](../sources.md#src-046), [SRC-051](../sources.md#src-051), [SRC-054](../sources.md#src-054)
 
 ## Active priorities
 

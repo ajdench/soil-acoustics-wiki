@@ -17,10 +17,21 @@ sources:
   - id: SRC-022
     resource: ../sources/src-022.md
     title: "Soil moisture enhances the vibrations induced by moving earthworms, 2026"
+  - id: SRC-048
+    resource: ../sources/src-048.md
+    title: "Soil health pilot study in England: Outcomes from an on-farm earthworm survey"
+  - id: SRC-051
+    resource: ../sources/src-051.md
+    title: "TREES doctoral project on forest soil biodiversity and the Soil Acoustic Meter"
+  - id: SRC-053
+    resource: ../sources/src-053.md
+    title: "Acoustics 2026 final conference programme"
 ---
 
 # Field sampling and interpretation
 
 Record the location, habitat, sampling depth or probe method, weather, soil moisture, recent management and time of day at each visit. A change in moisture can alter animal activity and how vibrations travel to the sensor. Repeat the same sampling pattern, instrument settings and interval where practical.
+
+Match each recording with an independent observation from the same place and time. In an English field survey, a second timed hand sort recovered earthworms missed on the first pass. The [earthworm survey](../evidence/earthworm-field-reference.md) records the size of that effect. A [proposed forest study](../evidence/forest-sam-research.md) describes how to pair commercial-meter recordings with soil-fauna samples. The [Newhouse Farm account](../evidence/newhouse-soil-pilot.md) identifies the instrument and the observations that the operator released.
 
 The supplier's public explanation and April 2026 guide give different instructions for operator distance and timing. Keep the version used with the recording. If the version changes between visits, document the change before interpreting a difference in scores. See [what a recording measures](soil-acoustic-activity.md) and the [source register](../sources/register.md).

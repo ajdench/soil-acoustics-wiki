@@ -11,6 +11,9 @@ status: "stable"
 
 - Revised the [overview](index.md) to answer the owner’s questions about Soil Acoustics, its history, product, scientific evidence and competition. Added a visible Search boundary and equal insets around the governing question. The selected navigation item uses a softer green from the same palette.
 
+- Traced the meter from hand-sorting earthworms to commercial subscriptions and the Newhouse Farm pilot. The [research review](research-evidence.md) compares the woodland and single-species findings. The [systems comparison](monitoring-systems.md) adds a pest detection field trial and a measured limit of manual earthworm counts.
+- Checked the supplier’s wireworm classifier, reported database size and the Denton Reserve field comparison against the original accounts. The [company page](company-and-product.md) also identifies a planned trial that pairs commercial-meter recordings with soil-fauna sampling.
+
 - Added the initial review of Soil Acoustics Ltd, its meter, the published operating guide and website. Checked funding, filing, subscription and data-use claims against their respective primary records.
 - Compared research on soil fauna with the scope of the commercial score. Recorded weather, soil conditions and study design where they affect an acoustic result.
 - Added the [monitoring systems comparison](monitoring-systems.md), covering commercially available systems and field trials. Recorded the public purchase or access route for each option.

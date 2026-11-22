@@ -51,5 +51,17 @@ resource: ../../docs/sources.md
 - [SRC-041 · Soil Microphone for Frontier Labs recorders](src-041.md) — Frontier Labs.
 - [SRC-042 · BAR-LT bioacoustic recorder](src-042.md) — Frontier Labs.
 - [SRC-043 · Groundswell show offer for SAM and 12 months of Standard analysis](src-043.md) — Soil Acoustics Ltd.
+- [SRC-044 · Listening to earthworms burrowing and roots growing, 2018](src-044.md) — Marine Lacoste, Siul Ruiz and Dani Or.
+- [SRC-045 · The sound of restored soil in a temperate forest, 2023](src-045.md) — Jake M. Robinson, Martin F. Breed and Carlos Abrahams.
+- [SRC-046 · Continuous measurement of red wood ant outdoor behaviour using passive acoustic monitoring, 2024](src-046.md) — Louise Vang Sørensen, S. Rodríguez-Martínez, M. Rollo and J. Klaminder.
+- [SRC-047 · Acoustic differentiation of soil-surface-dwelling invertebrates under controlled conditions, 2026](src-047.md) — Amy N. Annells and colleagues.
+- [SRC-048 · Soil health pilot study in England: Outcomes from an on-farm earthworm survey](src-048.md) — Jacqueline L. Stroud.
+- [SRC-049 · Warwick's announcement of the soil acoustics feasibility study](src-049.md) — University of Warwick.
+- [SRC-050 · Soil monitoring, UK patent application GB2702686A](src-050.md) — Baker Consultants Ltd, via Google Patents.
+- [SRC-051 · TREES doctoral project on forest soil biodiversity and the Soil Acoustic Meter](src-051.md) — TREES Doctoral Landscape Award.
+- [SRC-052 · Grape root borer acoustic detection, final report for GS09-082](src-052.md) — William Sanders and Oscar Liburd, University of Florida.
+- [SRC-053 · Acoustics 2026 final conference programme](src-053.md) — Institute of Acoustics.
+- [SRC-054 · Soil Ecoacoustics — Listening In to Soil Health](src-054.md) — Andrew Baker and Karthik Ashok.
+- [SRC-055 · Sounds of the underground, data and analysis code, version 1 (2024)](src-055.md) — Jake M. Robinson, Alex Taylor, Nicole Fickling, Xin Sun and Martin F. Breed.
 
 [Claim records](../evidence/claims.md)

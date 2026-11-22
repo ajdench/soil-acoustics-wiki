@@ -1,0 +1,149 @@
+{
+  "$schema": "https://denchco.github.io/knowledge-base-wiki-documentation/schema/standard-proposal-record-v1.json",
+  "schemaVersion": "1.0",
+  "id": "DKBWS-PROP-header-search-boundary-f7bc6cd45ad092f44eb1b88509ccde7d",
+  "slug": "header-search-boundary",
+  "title": "Verify the Search control against the adjacent header surface",
+  "target": {
+    "repository": "https://github.com/denchco/knowledge-base-wiki-standard",
+    "issueForm": ".github/ISSUE_TEMPLATE/standard-change.yml",
+    "issueFormVersion": "1.0",
+    "issueFormSha256": "3624749c2915771b98dabb7ec93f7ae34618da7b914bd28d20a557abd86f4adf",
+    "labels": [
+      "enhancement",
+      "standard-change"
+    ]
+  },
+  "origin": {
+    "project": "Soil Acoustics research wiki",
+    "publicUrl": "https://github.com/ajdench/soil-acoustics-wiki",
+    "implementationCommit": "41dc9889ae22fa764277ee2bceb468a30ba8b990",
+    "jjChangeId": null,
+    "pinnedStandardRevision": "b781907eea212c4ddcbd64183997d0982d4caf40"
+  },
+  "change": {
+    "problem": "On a wiki using the released header adapter and a #32541c header, the Search fill and adjoining header measured 1.29:1 at rest in both palettes. No border was painted. Desktop label and magnifier contrast was 10.57:1 against the control itself. The dark hover fill measured 2.47:1 against the header. The rc.17 browser assertions measured internal foreground contrast and focus. A reader could still have difficulty locating the control’s extent.",
+    "intendedOutcome": "Give desktop Search and its visible mobile counterpart a distinguishable surface or continuous perimeter at 3:1 or higher against the actual adjacent header at rest, hover and keyboard focus. Retain the existing label, shortcut, glyph and focus checks. Proposed fixtures must accept adequate fill alone and a complete contrasting border around a weak fill. They must reject a weak fill with no effective border or an incomplete perimeter, even when the label and icon remain legible.",
+    "reuseClassification": "reusable",
+    "affectedProfiles": [
+      "standard-production"
+    ],
+    "affectedRequirements": [
+      "DKBWS-DESIGN-002"
+    ],
+    "implementationEvidence": [
+      "docs/assets/theme.css",
+      "scripts/header-browser-contract.mjs",
+      "scripts/header-browser-contract.test.mjs",
+      "scripts/check-header-browser.mjs",
+      "https://github.com/denchco/knowledge-base-wiki-standard/blob/b781907eea212c4ddcbd64183997d0982d4caf40/docs/spec/prompts.md#L24",
+      "https://github.com/denchco/knowledge-base-wiki-standard/blob/b781907eea212c4ddcbd64183997d0982d4caf40/docs/spec/requirements.md#L166",
+      "https://github.com/denchco/knowledge-base-wiki-standard/blob/b781907eea212c4ddcbd64183997d0982d4caf40/scripts/header-browser-contract.mjs#L77-L100",
+      "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html#boundaries"
+    ],
+    "verificationEvidence": [
+      {
+        "command": "npm run verify",
+        "result": "pass",
+        "completedAt": "2026-11-22T21:45:00.666Z",
+        "evidence": "The complete Standard Production maintainer check passed all 27 requirements on the local archive carrying this public implementation. Search perimeter 8.19:1 against the rendered header in the project palette. The 96-case header matrix passed in Chromium and WebKit and rejected 18 regression fixtures.",
+        "sha256": "d5c4ca1a9d18dc8437a876fc29e48975745f32858727783c5b7769fec4ae79eb"
+      },
+      {
+        "command": "GitHub Pages build and deploy",
+        "result": "pass",
+        "completedAt": "2026-11-22T21:39:38Z",
+        "evidence": "The public implementation built and deployed successfully. https://github.com/ajdench/soil-acoustics-wiki/actions/runs/45073255899/job/137364884898",
+        "sha256": null
+      }
+    ],
+    "dependencies": [
+      "Existing header tokens, the native renderer Search controls, the locked browser engines and the existing header verification matrix."
+    ],
+    "limitations": [
+      "The 3:1 threshold for the Search perimeter or fill in each tested state is a proposed project and reference-adapter convention. WCAG 2.2 SC 1.4.11 concerns the visual cues needed to identify a component or state. An identifiable labelled control can satisfy that criterion without a contrasting perimeter.",
+      "Browser geometry and computed colour measurements do not establish how frequently readers locate the control."
+    ],
+    "fallback": "A single opaque border using a header-ink token that meets the threshold is sufficient. A contrasting control fill can also satisfy the test. Keep the separate focus indicator.",
+    "migration": "Add the Search boundary assertion and positive and negative fixtures to the released header verification. Preserve existing branding, shared hover tokens, geometry, shortcut and keyboard operation. Existing consumers can test the rendered header when they adopt a containing release.",
+    "accessibility": {
+      "status": "applicable",
+      "evidence": "The measured consumer fix uses a 2 CSS pixel perimeter at 8.19:1 against the #32541c header. The separate 3 CSS pixel focus ring measures 8.19:1. Preserve at least 4.5:1 for text and shortcut and 3:1 for meaningful icons and visible focus."
+    },
+    "browser": {
+      "status": "applicable",
+      "evidence": "The acceptance matrix covers Chromium and WebKit, both palettes, desktop and mobile Search, and rest, hover and keyboard focus. Measure fill or all four perimeter edges against the rendered outside header, and report the identity of the visible control."
+    }
+  },
+  "disclosure": {
+    "licensingStatus": "cleared",
+    "licensingEvidence": [
+      "The cited Standard components carry the upstream MIT notice in LICENSES/denchco-standard-MIT.txt. The proposal describes original browser observations and links to the public implementation. Reviewed publisher screenshots and third-party recordings are excluded. The originating repository documents rights to its original work in LICENSING.md."
+    ],
+    "authorityToShare": true,
+    "secrets": false,
+    "privateAbsolutePaths": false,
+    "personalData": false,
+    "confidentialOrRestrictedEvidence": false,
+    "vulnerabilityDetails": false,
+    "unlicensedMaterial": false,
+    "automaticUploads": false
+  },
+  "workflow": {
+    "local": {
+      "observationStatus": "recorded",
+      "implementationStatus": "complete",
+      "verificationStatus": "pass"
+    },
+    "payload": {
+      "status": "prepared",
+      "marker": "<!-- dkbws-standard-proposal:v1:DKBWS-PROP-header-search-boundary-f7bc6cd45ad092f44eb1b88509ccde7d -->",
+      "digest": "8a2b93f489e6c99847ef7b650e41971741e37b69843bbb90dbaa60d6b6fb78cc",
+      "formSha256": "3624749c2915771b98dabb7ec93f7ae34618da7b914bd28d20a557abd86f4adf",
+      "preparedAt": "2026-11-22T21:45:18.735Z"
+    },
+    "approval": {
+      "status": "pending",
+      "digest": null,
+      "formSha256": null,
+      "authority": null,
+      "approvedAt": null
+    },
+    "issue": {
+      "status": "not-submitted",
+      "observedState": "unknown",
+      "url": null,
+      "number": null,
+      "linkedAt": null,
+      "observedAt": null,
+      "remotePayloadDigest": null
+    },
+    "upstream": {
+      "classification": "pending",
+      "decision": "pending",
+      "decidedAt": null,
+      "decisionRevision": null,
+      "evidence": null,
+      "rationale": null
+    },
+    "acceptance": {
+      "requirementIds": []
+    },
+    "release": {
+      "status": "pending",
+      "tag": null,
+      "revision": null,
+      "recordedAt": null,
+      "registryRevision": null
+    },
+    "adoption": {
+      "status": "not-considered",
+      "authority": null,
+      "fromStandardRevision": null,
+      "toStandardRevision": null,
+      "consumerRevision": null,
+      "adoptedAt": null,
+      "verification": []
+    }
+  }
+}

@@ -30,5 +30,16 @@ resource: ../../docs/evidence-matrix.md
 - [A trial-stage monitoring system](comparison-biofonic.md) — Developer-reported capability and field participation.
 - [A research array for changing soil conditions](comparison-maeder.md) — Peer-reviewed field evidence.
 - [A field recorder with a dedicated soil microphone](comparison-frontier.md) — Manufacturer specifications and price calculation.
+- [Sources of underground vibrations](roots-and-worms.md) — Peer-reviewed experimental evidence.
+- [Abundance and richness in English woodland](woodland-abundance-and-richness.md) — Peer-reviewed field and chamber evidence.
+- [One species can raise an acoustic index](one-species-and-acoustic-indices.md) — Peer-reviewed experimental evidence.
+- [Separating movement sounds under controlled conditions](controlled-invertebrate-sound-profiles.md) — Peer-reviewed experimental evidence.
+- [The original sampling problem](origins-worm-surveys.md) — Project partners' stated aim.
+- [Wireworm sound recognition](wireworm-classifier.md) — Applicant-reported classifier result.
+- [A proposed field test of the meter](forest-sam-research.md) — Published research plan.
+- [Checking which animal made a sound](target-pest-scouting.md) — Field observations checked by excavation.
+- [Earthworm pits as a field reference](earthworm-field-reference.md) — Peer-reviewed farmer survey and repeat sorting.
+- [What the Newhouse Farm pilot reported](newhouse-soil-pilot.md) — Operator account and conference programme.
+- [What the Denton baseline can show](denton-acoustic-baseline.md) — Developer-reported field comparison.
 
 [Source records](../sources/register.md)

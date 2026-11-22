@@ -1,0 +1,149 @@
+{
+  "$schema": "https://denchco.github.io/knowledge-base-wiki-documentation/schema/standard-proposal-record-v1.json",
+  "schemaVersion": "1.0",
+  "id": "DKBWS-PROP-governing-question-insets-ffb7218fac40c6f2fd0ffdbff9776fc7",
+  "slug": "governing-question-insets",
+  "title": "Verify equal interior spacing in the governing-question callout",
+  "target": {
+    "repository": "https://github.com/denchco/knowledge-base-wiki-standard",
+    "issueForm": ".github/ISSUE_TEMPLATE/standard-change.yml",
+    "issueFormVersion": "1.0",
+    "issueFormSha256": "3624749c2915771b98dabb7ec93f7ae34618da7b914bd28d20a557abd86f4adf",
+    "labels": [
+      "enhancement",
+      "standard-change"
+    ]
+  },
+  "origin": {
+    "project": "Soil Acoustics research wiki",
+    "publicUrl": "https://github.com/ajdench/soil-acoustics-wiki",
+    "implementationCommit": "41dc9889ae22fa764277ee2bceb468a30ba8b990",
+    "jjChangeId": null,
+    "pinnedStandardRevision": "b781907eea212c4ddcbd64183997d0982d4caf40"
+  },
+  "change": {
+    "problem": "On the rendered home page at a 1570 CSS pixel viewport in WebKit, the governing question had computed padding of 0px top, 0px right, 0px bottom and 12px left. Its inline-start rail was 4px, the paragraph’s computed block margins were 15px and the callout was 27px tall. The fill reached the text block unevenly. The released tests confirmed the marker and accent colours without measuring the four insets.",
+    "intendedOutcome": "Give the governing question equal, positive space on all four sides, measured from the inner borders to the paragraph box. The reusable reference adapter can use a single relative inset token and remove inherited outer paragraph margins. A positive fixture must pass at desktop width and with the question wrapped on a narrow viewport. Negative fixtures must catch a missing or unequal inset and paragraph margins that change the actual spacing.",
+    "reuseClassification": "reusable",
+    "affectedProfiles": [
+      "human-and-agent",
+      "standard-production"
+    ],
+    "affectedRequirements": [
+      "DKBWS-HUMAN-002",
+      "DKBWS-HUMAN-004"
+    ],
+    "implementationEvidence": [
+      "docs/assets/theme.css",
+      "scripts/governing-question-insets.mjs",
+      "scripts/check-reader-browser.mjs",
+      "https://github.com/denchco/knowledge-base-wiki-standard/blob/b781907eea212c4ddcbd64183997d0982d4caf40/docs/spec/requirements.md#L20-L21",
+      "https://github.com/denchco/knowledge-base-wiki-standard/blob/b781907eea212c4ddcbd64183997d0982d4caf40/scripts/wiki-appearance.mjs#L228-L234",
+      "https://github.com/denchco/knowledge-base-wiki-standard/blob/b781907eea212c4ddcbd64183997d0982d4caf40/scripts/runtime-browser-contract.playwright.js#L303-L317"
+    ],
+    "verificationEvidence": [
+      {
+        "command": "npm run verify",
+        "result": "pass",
+        "completedAt": "2026-11-22T21:45:00.666Z",
+        "evidence": "The complete Standard Production maintainer check passed all 27 requirements on the local archive carrying this public implementation. At desktop and narrow widths in both Chromium and WebKit, all four measured insets were 12 CSS pixels. The checks use the paragraph box and exclude the 4px rail.",
+        "sha256": "d5c4ca1a9d18dc8437a876fc29e48975745f32858727783c5b7769fec4ae79eb"
+      },
+      {
+        "command": "GitHub Pages build and deploy",
+        "result": "pass",
+        "completedAt": "2026-11-22T21:39:38Z",
+        "evidence": "The public implementation built and deployed successfully. https://github.com/ajdench/soil-acoustics-wiki/actions/runs/45073255899/job/137364884898",
+        "sha256": null
+      }
+    ],
+    "dependencies": [
+      "Existing governing-question marker, renderer stylesheet and browser test. The proposed reference adapter needs one relative spacing token."
+    ],
+    "limitations": [
+      "Uniform spacing is a proposed reference design rule. The rc.17 marker, accent and neutral-quotation requirements do not specify padding. Other semantic renderers can meet the spacing intent through equivalent layout rules.",
+      "Measure to the paragraph or line box. The unused part of a short final text line and the shapes of individual letters cannot establish the right or vertical inset."
+    ],
+    "fallback": "Apply one scoped CSS padding value to the marked element and reset the outer paragraph margins. Preserve ordinary quotation styling.",
+    "migration": "Extend the existing governing-question reference styles and rendered fixtures, including a neutral quotation control. Apply the change only where the project already declares or displays a governing question. Continue to preserve its wording, semantic marker, rail and text colours.",
+    "accessibility": {
+      "status": "applicable",
+      "evidence": "Keep the accent and neutral-quotation checks. Check that the marked callout wraps without page overflow on a narrow screen. WCAG does not prescribe equal callout insets."
+    },
+    "browser": {
+      "status": "applicable",
+      "evidence": "The consumer targets 0.6rem on all four sides with zero paragraph margins. At a 20px root that is 12px on each side, measured inside the 4px rail. Compare all four rendered distances to the target within 0.5 CSS pixels in Chromium and WebKit, including a wrapped narrow case."
+    }
+  },
+  "disclosure": {
+    "licensingStatus": "cleared",
+    "licensingEvidence": [
+      "The cited Standard components carry the upstream MIT notice in LICENSES/denchco-standard-MIT.txt. The proposal describes original browser observations and links to the public implementation. Reviewed publisher screenshots and third-party recordings are excluded. The originating repository documents rights to its original work in LICENSING.md."
+    ],
+    "authorityToShare": true,
+    "secrets": false,
+    "privateAbsolutePaths": false,
+    "personalData": false,
+    "confidentialOrRestrictedEvidence": false,
+    "vulnerabilityDetails": false,
+    "unlicensedMaterial": false,
+    "automaticUploads": false
+  },
+  "workflow": {
+    "local": {
+      "observationStatus": "recorded",
+      "implementationStatus": "complete",
+      "verificationStatus": "pass"
+    },
+    "payload": {
+      "status": "prepared",
+      "marker": "<!-- dkbws-standard-proposal:v1:DKBWS-PROP-governing-question-insets-ffb7218fac40c6f2fd0ffdbff9776fc7 -->",
+      "digest": "d473191e0069b08a78370b9c2cc18116f75a6bd92bb3c4e49fe0ef063cb8491d",
+      "formSha256": "3624749c2915771b98dabb7ec93f7ae34618da7b914bd28d20a557abd86f4adf",
+      "preparedAt": "2026-11-22T21:45:19.093Z"
+    },
+    "approval": {
+      "status": "pending",
+      "digest": null,
+      "formSha256": null,
+      "authority": null,
+      "approvedAt": null
+    },
+    "issue": {
+      "status": "not-submitted",
+      "observedState": "unknown",
+      "url": null,
+      "number": null,
+      "linkedAt": null,
+      "observedAt": null,
+      "remotePayloadDigest": null
+    },
+    "upstream": {
+      "classification": "pending",
+      "decision": "pending",
+      "decidedAt": null,
+      "decisionRevision": null,
+      "evidence": null,
+      "rationale": null
+    },
+    "acceptance": {
+      "requirementIds": []
+    },
+    "release": {
+      "status": "pending",
+      "tag": null,
+      "revision": null,
+      "recordedAt": null,
+      "registryRevision": null
+    },
+    "adoption": {
+      "status": "not-considered",
+      "authority": null,
+      "fromStandardRevision": null,
+      "toStandardRevision": null,
+      "consumerRevision": null,
+      "adoptedAt": null,
+      "verification": []
+    }
+  }
+}
