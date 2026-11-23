@@ -89,11 +89,11 @@ test("quantized saturated, dark, neutral and generated seeds retain contrast", (
       assert.equal(palette.headerSurface, accent);
       assert.equal(palette.selectedText, palette.accentDark);
       assert.ok(contrast(palette.selectedText, palette.selectedBackground) >= 4.5);
-      for (const surface of [palette.selectedBackground, palette.background, palette.surface]) {
-        assert.ok(contrast(palette.accent, surface) >= 3, `${accent} ${name} navigation rail against ${surface}`);
-      }
+      assert.ok(contrast(palette.selectedBackground, palette.background) >= 1.2);
+      assert.ok(contrast(palette.headerControlSurface, palette.headerSurface) >= 3);
+      assert.ok(contrast(palette.headerSelected, palette.headerSurface) >= 3);
       assert.ok(contrast(palette.headerText, accent) >= 4.5);
-      assert.ok(contrast(palette.headerText, palette.headerControlSurface) >= 4.5,
+      assert.ok(contrast(palette.headerControlText, palette.headerControlSurface) >= 4.5,
         `${accent} ${name} header rest text`);
       assert.ok(contrast(palette.headerSelectedText, palette.headerSelected) >= 4.5,
         `${accent} ${name} header selected text`);
@@ -120,8 +120,8 @@ test("dark seeds receive a readable question tint without replacing visible bran
 
 test("soil-green navigation uses soft palette surfaces while the header retains the original seed", () => {
   const { light, dark } = deriveAppearance({ ...config, accent: "#32541c" });
-  assert.equal(light.selectedBackground, "#ebf6e5");
-  assert.equal(dark.selectedBackground, "#262e22");
+  assert.equal(light.selectedBackground, "#dbead3");
+  assert.equal(dark.selectedBackground, "#333f2c");
   for (const palette of [light, dark]) assert.equal(palette.headerSurface, "#32541c");
 });
 

@@ -82,7 +82,7 @@ export default async (page, options = {}) => {
     : [];
   const appearance = options.appearance ?? null;
   const lightColors = appearance?.light ?? {
-    headerBackground: "#ffffff", headerText: "#1f2933", background: "#ffffff",
+    headerBackground: "#ffffff", headerText: "#1f2933", headerControlText: "#1f2933", background: "#ffffff",
     accent: "#004d80", accentContrast: "#ffffff", surface: "#ffffff",
   };
   const rgb = hex => `rgb(${hex.slice(1).match(/../g).map(channel => parseInt(channel, 16)).join(", ")})`;
@@ -880,7 +880,7 @@ export default async (page, options = {}) => {
   check(standardHeader.headerBackground === rgb(lightColors.headerBackground), "The production header must render its configured light surface");
   check(standardHeader.headerColour === rgb(lightColors.headerText), "The production header must render its configured readable text");
   check(standardHeader.searchBackground === standardHeaderControls.snapshot.tokens["header-control-surface"], "The closed Search control must use its opaque semantic surface");
-  check(standardHeader.searchColour === rgb(lightColors.headerText), "The closed Search control must render its configured readable text");
+  check(standardHeader.searchColour === rgb(lightColors.headerControlText), "The closed Search control must render its configured readable text");
   check(
     standardHeader.topic && standardHeader.heading && closeTo(standardHeader.topic.left, standardHeader.heading.left),
     "The visible desktop title must align to the body-text left rail in Standard mode",

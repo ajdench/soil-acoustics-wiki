@@ -9,6 +9,32 @@ import { checkQuestionInsets } from "./governing-question-insets.mjs";
 
 const reviewMode = reviewEvidenceMode(process.cwd());
 
+async function checkCurrentNavigation(page) {
+  const current = page.locator('nav.md-nav--primary a[aria-current="page"]');
+  assert.equal(await current.count(), 1);
+  assert.equal(await current.evaluate(link => link.pathname), new URL(page.url()).pathname);
+  // The renderer maintains one heading list for the sidebar and one for the drawer.
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForFunction(() => {
+    const contents = [...document.querySelectorAll("nav.md-nav--secondary")];
+    return contents.length > 0 && contents.every(nav => {
+      const last = [...nav.querySelectorAll("a.md-nav__link")].at(-1);
+      return last?.classList.contains("md-nav__link--active") && last.getAttribute("aria-current") === "location"
+        && nav.querySelectorAll("[aria-current]").length === 1;
+    });
+  });
+  for (const selected of await page.locator('nav a[aria-current]').all()) {
+    const style = await selected.evaluate(link => {
+      const s = getComputedStyle(link);
+      return { leadingEdge: parseFloat(s.borderInlineStartWidth), shadow: s.boxShadow, weight: Number(s.fontWeight) };
+    });
+    assert.equal(style.leadingEdge, 0);
+    assert.equal(style.shadow, "none");
+    assert.ok(style.weight >= 700);
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+}
+
 const server = spawn(process.execPath, ["scripts/serve-built-site.mjs"], {
   env: { ...process.env, HOST: "127.0.0.1", PORT: "0", SITE_DIR: "site" },
   stdio: ["ignore", "pipe", "inherit"],
@@ -32,6 +58,7 @@ try {
         assert.equal(start.status(), 200);
         const question = page.locator("article blockquote.governing-question");
         const questionInsets = await checkQuestionInsets(question);
+        await checkCurrentNavigation(page);
         // Replay the unpadded callout and independent right-edge/paragraph regressions.
         for (const defect of ["padding-block: 0", "padding-right: 0", "margin-top: 1em"]) {
           const selector = defect.startsWith("margin") ? "blockquote.governing-question > p" : "blockquote.governing-question";
@@ -46,6 +73,7 @@ try {
         await page.waitForURL("**/monitoring-systems/");
         const article = page.locator("article");
         await article.getByRole("heading", { name: /Comparing soil acoustic monitoring systems/ }).waitFor();
+        await checkCurrentNavigation(page);
         const body = await article.innerText();
         for (const product of ["Biofonic", "ALISO", "BAR-LT", "AudioMoth", "JrF", "SAQI"]) assert(body.includes(product), product);
         const reference = article.locator('a[href*="sources/#src-"]').first();

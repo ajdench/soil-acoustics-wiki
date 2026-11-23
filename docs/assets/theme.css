@@ -24,6 +24,8 @@ body[data-md-color-accent] {
   --header-surface: var(--surface);
   --header-text: var(--text);
   --header-control-surface: #edf2f5;
+  --header-control-text: var(--header-text);
+  --header-control-border: var(--header-text);
   --header-hover: #aaa08d;
   --header-hover-text: #29251f;
   --header-selected: #d9e7f0;
@@ -94,7 +96,6 @@ body[data-md-color-accent] {
 .md-nav--primary .md-nav__item .md-nav__link--active,
 .md-nav--secondary .md-nav__link--active {
   background-color: var(--accent-lightest);
-  border-inline-start: 3px solid var(--accent);
   color: var(--accent-dark);
   font-weight: 700;
 }
@@ -120,7 +121,7 @@ body[data-md-color-accent] {
   background-color: var(--header-control-surface);
   border-radius: var(--header-control-radius);
   box-sizing: border-box;
-  color: var(--header-text);
+  color: var(--header-control-text);
   height: var(--header-control-height);
   opacity: 1;
   transition: none;
@@ -144,10 +145,11 @@ body[data-md-color-accent] {
   transform: translate(-50%, -50%) scaleX(-1);
 }
 
-/* The closed Search control needs an edge against the brand in both palettes. */
+/* Keep one continuous edge around every action on the branded header. */
 .md-search__button,
-.md-header__button[for="__search"] {
-  border: 2px solid var(--header-text);
+.md-header__button:not(.md-logo),
+.layout-width-toggle {
+  border: 1.5px solid var(--header-control-border);
 }
 
 .md-search__button::before {
@@ -157,7 +159,7 @@ body[data-md-color-accent] {
 
 .md-search__button::after {
   background-color: var(--header-control-surface);
-  color: var(--header-text);
+  color: var(--header-control-text);
   opacity: 1;
   transition: none;
 }

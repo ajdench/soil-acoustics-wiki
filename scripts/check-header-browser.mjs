@@ -114,7 +114,7 @@ try {
   }
   assert.deepEqual(Object.keys(report.engines).sort(), ["chromium", "webkit"], "Both browser engines must finish");
   assert.equal(report.cases.length, 96, "Every fixture, appearance, width, viewport and zoom case must finish");
-  assert.equal(report.negativeCases.length, 18, "Both engines must refuse every rendered defect");
+  assert.equal(report.negativeCases.length, 22, "Both engines must refuse every rendered defect");
   assert.equal(report.screenshots.length, 8, "Generic screenshots must cover both engines, appearances and device classes");
   report.completedMatrixCases = report.cases.length;
   report.ok = true;
@@ -176,10 +176,8 @@ async function assertFocus(page, selector) {
   });
   assert.ok(result.focused && result.style !== "none" && result.width >= 2, `Visible keyboard focus required for ${selector}`);
   assert.ok(contrastRatio(result.color, result.header) >= 3, `Keyboard focus boundary must contrast with header for ${selector}`);
-  if (await page.locator(selector).evaluate(element => element.matches('.md-search__button, label[for="__search"]'))) {
-    const snapshot = await measureHeader(page);
-    result.searchBoundaryContrast = assertHeaderSnapshot(snapshot, { scheme: snapshot.scheme, label: "Focused Search", state: "focus" }).searchBoundaryContrast;
-  }
+  const snapshot = await measureHeader(page);
+  result.minimumBoundaryContrast = assertHeaderSnapshot(snapshot, { scheme: snapshot.scheme, label: "Keyboard focus", state: "focus" }).minimumBoundaryContrast;
   return result;
 }
 async function keyboardJourney(page, scheme, width, viewport) {
@@ -258,7 +256,9 @@ async function negativeJourneys(page, engine) {
     ["translucent-rest", ".layout-width-toggle { background-color:rgba(0,0,0,.5)!important; }", /opaque/],
     ["off-centre-svg", ".md-header__button:not(.md-logo)>svg { left:40%!important; }", /centred/],
     ["revealed-native-label", ".md-header label[hidden] { display:block!important; }", /native.*(?:visible|hidden)/],
-    ["invisible-search-boundary", ".md-search__button { border-color:transparent!important; }", /Search boundary contrast/],
+    ["invisible-search-boundary", ".md-search__button { border-color:transparent!important; }", /boundary contrast/],
+    ["invisible-width-boundary", ".layout-width-toggle { border-color:transparent!important; }", /boundary contrast/],
+    ["incomplete-palette-boundary", ".md-header__option label { border-inline-end-color:transparent!important; }", /boundary contrast/],
     ["unreadable-shortcut", ".md-search__button::after { color:var(--header-control-surface)!important; }", /shortcut/],
     ["colour-crossfade", ".layout-width-toggle { transition:color .2s,background-color .2s!important; }", /crossfade/],
     ["wrong-hover", ".layout-width-toggle:hover { background-color:#ff0000!important; }", /brown hover/],

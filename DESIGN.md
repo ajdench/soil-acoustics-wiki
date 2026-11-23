@@ -44,8 +44,11 @@ The appearance generator derives contrast-adjusted colours for each surface from
 | Active link and question | `#40632b` | `#a4cc8f` |
 | Visited link | `#496c34` | `#b1d99b` |
 | Light accent surface | `#ebf6e5` | `#262e22` |
-| Selected navigation fill | `#ebf6e5` | `#262e22` |
+| Selected navigation fill | `#dbead3` | `#333f2c` |
 | Selected navigation text | `#365820` | `#b7dfa2` |
+| Header control fill | `#d4e4cd` | `#d4e4cd` |
+| Selected width control fill | `#b5cda9` | `#b5cda9` |
+| Header control text and icons | `#21291d` | `#21291d` |
 | Page | `#f8fbf7` | `#0f130e` |
 | Body text | `#1f231d` | `#e8ede5` |
 | Surface | `#ffffff` | `#1a1e19` |
@@ -56,11 +59,11 @@ The appearance generator derives contrast-adjusted colours for each surface from
 | Hover text | `#29251f` | `#201c17` |
 | Accent overlay | `rgb(64 99 43 / 10%)` | `rgb(164 204 143 / 10%)` |
 
-Measure 4.5:1 or better for normal text and 3:1 or better for interactive boundaries and focus on their actual backgrounds. The closed Search control has a visible perimeter against the adjacent header at rest, on hover and on keyboard focus. Check the label and shortcut against the control fill separately. Check the compact Search icon and keyboard focus in both appearances.
+Measure each header control against the surrounding brand green. At rest, the sage fill gives 6.52:1 contrast. The selected Wide fill gives 5.07:1. The dark text and icons give 11.27:1 against the rest fill and 8.77:1 against the selected fill. Use the rest fill for the shared perimeter so each action remains distinct on hover. Keyboard focus adds a separate outer ring. Check the compact drawer, theme and Search actions on mobile and measure the Search shortcut against its own fill.
 
 ## Reader components
 
-The rc.17 reference adapter uses the exact brand seed as the selected menu fill. The owner requested a lighter selection so an active link has less visual weight than the site header. The local adapter uses a soft accent fill, bold text and a 3px leading rail for the current page and section, including in the mobile menu. Its local fixture checks these roles. The header retains the exact brand seed.
+The current page and section use a soft green fill and bold type in both sidebars and the mobile menu. Keep the leading edge clear so active and inactive labels align. The label contrast is 6.50:1 in the light palette and 7.46:1 in the dark palette. Expose the current page and the current section to assistive technology. The section marker follows the renderer when the reader scrolls.
 
 The marked `governing-question` block displays the subject question on the home page. Give its inline-start rail and text the active palette accent. Use one `.6rem` inset on all four sides, measured from the inner border edge to the paragraph box. The rail width is additional. Remove the paragraph margin so a wrapped question keeps the same inset above and below. Apply the same component to every verbatim repetition in its bounded reader set. Keep paraphrases, research quotations and source-register titles neutral.
 

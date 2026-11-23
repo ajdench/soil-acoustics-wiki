@@ -7,18 +7,20 @@ status: "draft"
 
 # Standard proposals
 
-This wiki has two proposals for improving the DenchCo Standard. The project has implemented and verified both changes locally. Approval to submit is pending, and neither has an upstream issue. The project has yet to consider adopting an upstream release for either change.
+This page tracks improvements that originated in the Soil Acoustics wiki. Two earlier proposals cover Search contrast and the spacing around the governing question. Both have verified local implementations. Their issue forms remain unsubmitted.
 
-Each proposal has a tracked JSON record under `standard-proposals/`. Use that record for its current status. The workflow generates a disposable preview in `output/standard-proposals/`.
+Each issue proposal has a tracked JSON record under `standard-proposals/`. Use that record for its current status. The workflow generates a disposable preview in `output/standard-proposals/`.
 
 ## Changes proposed from this wiki
+
+The header and sidebar review also produced an implementation pull request. It gives the header controls a shared, distinguishable surface and tests their contrast against the header in both themes. It gives the current page and section a matching tinted background and a bold label, with the current location exposed to screen readers. The wiki uses these changes locally and remains pinned to `v0.1.0-rc.17`. [DenchCo Standard pull request 70](https://github.com/denchco/knowledge-base-wiki-standard/pull/70)
 
 | Proposed change | What the released checks missed | Acceptance test |
 | --- | --- | --- |
 | Search contrast against the header (`header-search-boundary`) | A legible label could pass even when the button fill blended into the header. | Require either a fill or a continuous perimeter with 3:1 contrast against the adjacent header. Measure the visible control at rest, on hover and at keyboard focus in both palettes. Keep the separate keyboard focus check. |
 | Equal insets around the governing question (`governing-question-insets`) | The marker and rail passed with 12 pixels on the left and zero padding on the other sides. | Measure equal, positive space from each inside border to the paragraph box. Test the wrapped mobile question and a desktop question. A missing inset or a paragraph margin that changes the spacing must fail. |
 
-The records identify the implementation commit and pinned Standard revision for each change. The navigation selection colour is a separate project design choice documented in `DESIGN.md`.
+The records identify the implementation commit and pinned Standard revision for each change. The project design contract in `DESIGN.md` records the colours used here.
 
 ## Local workflow
 
