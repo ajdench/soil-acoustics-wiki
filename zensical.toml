@@ -47,6 +47,8 @@ format = "pymdownx.superfences.fence_code_format"
 
 [project.theme]
 custom_dir = "overrides"
+logo = "assets/soil-soundwave.svg"
+favicon = "assets/soil-soundwave.svg"
 font = false
 features = ["navigation.instant", "navigation.top", "search.highlight"]
 

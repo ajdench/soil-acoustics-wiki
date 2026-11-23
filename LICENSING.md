@@ -8,6 +8,8 @@ Soil Acoustics Ltd and other publishers retain the rights they hold in their web
 
 ## Third-party software
 
+The wiki header and favicon use the seven-bar Soundwave glyph from Bootstrap Icons v1.13.1. This wiki supplies the green background and light fill. [Original SVG](https://github.com/twbs/icons/blob/ce0e49dd063243118a115f17ad1fe1fe7576d552/icons/soundwave.svg) · [MIT licence](LICENSES/bootstrap-icons-MIT.txt)
+
 Reusable Standard components carry the [upstream MIT notice](LICENSES/denchco-standard-MIT.txt). The rendered theme uses [Lucide and Feather-derived icons](LICENSES/lucide-icons.txt). The vendored design validator includes its [upstream Apache 2.0 licence](tools/design-md/upstream/LICENSE). Third-party dependencies and generated vendor bundles retain their own licences. The published website includes [software licence notices](https://ajdench.github.io/soil-acoustics-wiki/assets/third-party-notices.txt) and a [browser runtime inventory](https://ajdench.github.io/soil-acoustics-wiki/assets/vendor/runtime-sbom.json).
 
 A tracked Standard change proposal must identify relevant third-party licence evidence and refer to material the project has authority to share. The local workflow checks for private paths and restricted content before opening a governed form. No proposal, release or adoption record grants additional reuse rights.

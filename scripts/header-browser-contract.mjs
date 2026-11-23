@@ -193,6 +193,9 @@ export async function inspectHeaderControls(page, { scheme, label = scheme, hove
   const hovered = [];
   if (hover) for (const control of await page.locator(headerControlSelector).all()) {
     await control.hover();
+    // After a cancelled press WebKit can briefly retain :active at 200% text
+    // size. Sample the hover-only state before checking its paint.
+    await control.and(page.locator(":hover:not(:active)")).waitFor({ state: "visible", timeout: 2500 });
     const samples = [];
     for (let frame = 0; frame < 3; frame++) {
       const sample = await control.evaluate(element => {

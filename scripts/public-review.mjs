@@ -116,6 +116,7 @@ export function writePublicRuntimeNotices(projectRoot, siteRoot) {
     "Third-party software licence notices",
     "The runtime inventory is in assets/vendor/runtime-sbom.json. These notices cover its identified packages and the installed dependency trees of the two prebuilt graph libraries. The inventory identifies those prebuilt bundles by their upstream package. The template and renderer notices appear below.",
     "DenchCo Knowledge Base Wiki Standard\n" + read(path.join(projectRoot, "LICENSES/denchco-standard-MIT.txt")).trim(),
+    "Bootstrap Icons v1.13.1, Soundwave, https://icons.getbootstrap.com/icons/soundwave/\n" + read(path.join(projectRoot, "LICENSES/bootstrap-icons-MIT.txt")).trim(),
     "Lucide icons and Feather-derived icons, https://lucide.dev/license\n" + read(path.join(projectRoot, "LICENSES/lucide-icons.txt")).trim(),
   ];
   const version = read(path.join(projectRoot, ".python-version")).trim().split(".").slice(0, 2).join(".");
