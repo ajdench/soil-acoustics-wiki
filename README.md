@@ -1,6 +1,6 @@
 # Soil Acoustics research wiki
 
-Read the [published wiki](https://ajdench.github.io/soil-acoustics-wiki/) or open the [comparison of six monitoring systems](https://ajdench.github.io/soil-acoustics-wiki/monitoring-systems/). The wiki reviews the Soil Acoustic Meter, its manufacturer’s website and field guide, and research on what underground sound can reveal about soil life.
+The [published wiki](https://ajdench.github.io/soil-acoustics-wiki/) explains who developed the Soil Acoustic Meter and what its recordings can tell a land manager about soil life. The [monitoring systems comparison](https://ajdench.github.io/soil-acoustics-wiki/monitoring-systems/) covers the commercial meter, other recorders and field trials, with costs and evidence for each.
 
 ## Content and publication
 

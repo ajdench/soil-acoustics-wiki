@@ -5,6 +5,31 @@
   color: var(--md-default-fg-color);
 }
 
+/* Set the prose measure independently of the space needed by data tables and graphs. */
+.md-content__inner.md-typeset {
+  --reader-measure: 72ch;
+}
+html[data-layout-width="wide"] .md-content__inner.md-typeset {
+  --reader-measure: 84ch;
+}
+.md-content__inner.md-typeset > :is(p, ul, ol, blockquote.governing-question) {
+  max-inline-size: var(--reader-measure);
+}
+.md-content__inner.md-typeset > p:has(img, iframe) {
+  max-inline-size: none;
+}
+.md-content__inner.md-typeset > h1:has(+ .review-date) {
+  margin-block-end: .45rem;
+}
+.md-content__inner.md-typeset > .review-date {
+  color: var(--muted);
+  font-size: .7rem;
+  margin-block-start: 0;
+}
+.md-typeset .governing-question > p {
+  text-wrap: balance;
+}
+
 /* Stable source identities render as independent numeric superscript links. */
 .md-typeset .source-citations {
   font-size: .75em;

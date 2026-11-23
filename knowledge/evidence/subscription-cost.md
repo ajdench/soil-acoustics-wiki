@@ -1,6 +1,6 @@
 ---
 type: Evidence record
-title: Cost of a field visit
+title: UK package prices and time in the field
 description: The supplier's listed regular UK packages are £1,010 for Light and £1,120 for Standard with one meter and first-year access, excluding tax and shipping.
 status: stable
 sources:
@@ -25,7 +25,7 @@ x-denchco:
   reviewed: '2026-11-22'
 ---
 
-# Cost of a field visit
+# UK package prices and time in the field
 
 The supplier's listed regular UK packages are £1,010 for Light and £1,120 for Standard with one meter and first-year access, excluding tax and shipping.
 

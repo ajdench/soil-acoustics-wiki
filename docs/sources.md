@@ -7,7 +7,9 @@ status: stable
 
 # Sources
 
-The records identify the publication, supplier, study author or public body behind each citation. Prices, terms and funding records are attributed to their publishers. The [evidence matrix](evidence-matrix.md) explains what each group of sources supports.
+Each numbered citation in the wiki leads to a row here. Select the publication title to open the original. The retrieval date tells you when the review checked that version or listing.
+
+Use the **Role** column to see who supplied the information and what it establishes. A retailer can confirm a listed price. A comparison between recordings and animal counts requires a study that collected both. The [evidence matrix](evidence-matrix.md) pairs each claim with its sources and limits.
 
 | ID | Authority | Role | Retrieved |
 | --- | --- | --- | --- |

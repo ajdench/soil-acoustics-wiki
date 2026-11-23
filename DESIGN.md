@@ -64,6 +64,8 @@ The rc.17 reference adapter uses the exact brand seed as the selected menu fill.
 
 The marked `governing-question` block displays the subject question on the home page. Give its inline-start rail and text the active palette accent. Use one `.6rem` inset on all four sides, measured from the inner border edge to the paragraph box. The rail width is additional. Remove the paragraph margin so a wrapped question keeps the same inset above and below. Apply the same component to every verbatim repetition in its bounded reader set. Keep paraphrases, research quotations and source-register titles neutral.
 
+Set prose to a maximum of 72ch in Standard and 84ch in Wide. Keep data tables, evidence screenshots and graphs free to use the full article width. On the overview, place the evidence review date below the title and give the governing question balanced line breaks.
+
 Use the governed numeric superscript links for registered citations. Each has its own focus target, accessible full source identity and exact register anchor. Preserve leading zeroes. Source URLs and licences belong in the register.
 
 Render routes with the pinned navigation override. Labels identify the destination. Lifecycle metadata belongs in the records. The shared header uses 1.6rem-high controls with .4rem rounding, square icon-only buttons, an unframed logo, and matching background and foreground state changes. Keep the theme control beside Wide and the native radio's checked state aligned with the active palette. Support focus, keyboard operation, zoom and mobile menu access.

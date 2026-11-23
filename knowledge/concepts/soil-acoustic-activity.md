@@ -30,10 +30,8 @@ sources:
 
 # What a soil recording measures
 
-A soil probe records vibrations coupled to the sensor. Activity near the probe, transmission through the soil and other sound sources all affect the result. Researchers have found associations between acoustic measures and soil invertebrates in particular settings. Their strength depends on the tested index, the reference observations and the conditions.
+A contact probe picks up vibrations that travel through the soil. The recording depends on which organisms are active nearby, how well the soil transmits their movements and what other sources of vibration are present.
 
-The commercial Soil Acoustic Quality Index summarises recordings using the supplier's own method. Before transferring a performance claim from a published model to this index, check which device, index, habitat and reference counts the study used. For field decisions, pair repeat visits with an independent observation.
+The recordings at Greno Woods illustrate the difference between abundance and richness. Researchers found that acoustic complexity rose with the number of animals collected (abundance). They found no corresponding link with the number of different types collected (richness). In a separate experiment, adding workers from one ant species raised all four acoustic measures tested. [Woodland study](../evidence/woodland-abundance-and-richness.md) · [Ant experiment](../evidence/one-species-and-acoustic-indices.md)
 
-Greno Woods samples linked acoustic complexity with the number of animals collected. A laboratory experiment showed that adding more workers of a single ant species raised several acoustic indices. The [woodland study](../evidence/woodland-abundance-and-richness.md) and the [ant experiment](../evidence/one-species-and-acoustic-indices.md) explain why acoustic activity can increase while the number of animal groups stays the same.
-
-Related records include [field comparability](field-comparability.md), [monitoring systems](monitoring-system-comparison.md) and the [evidence register](../evidence/claims.md).
+The commercial Soil Acoustic Quality Index uses the supplier’s own scoring method. To interpret a claim about that score, identify the instrument and index the study tested, where it took place and how the researchers checked their readings. The [field sampling record](field-comparability.md) describes how to pair repeat visits with an independent observation. The [evidence register](../evidence/claims.md) links to the studies.

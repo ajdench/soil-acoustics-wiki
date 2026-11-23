@@ -36,10 +36,10 @@ sources:
 
 # Commercial offers and trial access
 
-Soil Acoustics offers a handheld recorder and an analysis subscription. Biofonic develops a field sensor intended for continuous recording and analysis. SoilScope is the name of its funded research project. Trial participation depends on selection. Elekon's ALLSOUNDER ALISO offers soil audio recording and live listening with a compatible sensor.
+A buyer can purchase an analysis service, buy a recorder or apply to take part in a trial. Soil Acoustics sells a portable meter and a subscription that scores recordings. Elekon’s ALLSOUNDER ALISO supports live listening and scheduled recordings. Frontier Labs sells a logger and compatible soil microphone. With either recorder, the user chooses how to analyse the audio.
 
-For a price comparison, record whether the amount covers hardware, sensor, annual software, analysis, tax or delivery. Treat the amount of a research grant as project funding. A corroborated deployment establishes field use. Accuracy requires comparison with an appropriate independent reference.
+Biofonic is testing a sensor designed to stay in the field. SoilScope is the name of its funded research project. The public waitlist describes access to a trial. The grant amount establishes project funding and gives no retail price.
 
-Frontier Labs sells a logger and compatible soil microphone. Users can retain and analyse the files using a method they choose. The [vineyard field trial](../evidence/target-pest-scouting.md) illustrates a separate question for any pest-monitoring system. How often does the animal found at the recording point match the species the system claims to detect?
+A fair cost comparison specifies what each price covers, including the sensor, recorder, analysis, tax and delivery. Evidence of performance also depends on what the buyer needs. For pest monitoring, the [vineyard trial](../evidence/target-pest-scouting.md) illustrates why researchers must check which animal produced a sound before recommending a treatment.
 
 See [what a recording measures](soil-acoustic-activity.md) and the [source records](../sources/register.md).

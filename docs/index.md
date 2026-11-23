@@ -1,43 +1,36 @@
 # Soil Acoustics
 
-**Company, product and research review · 22 November 2026**
+<p class="review-date">Evidence reviewed 22 November 2026</p>
 
 <blockquote class="governing-question">
-<p>What is Soil Acoustics? What is the company? The background? The product? The science? The competition?</p>
+<p>Who is behind Soil Acoustics, what can its meter tell us about life in the soil, and how does it compare with other monitoring methods?</p>
 </blockquote>
 
-Soil Acoustics Ltd sells a handheld meter that records vibrations below the soil surface. Its probe picks up vibrations as animals move and feed. Studying these sounds is called **soil ecoacoustics**. The farmer can listen to the recordings later in the portal, where the company also gives each recording a score. What does that score tell the person standing in the field? [SRC-001](sources.md#src-001), [SRC-002](sources.md#src-002), [SRC-023](sources.md#src-023)
+Soil Acoustics Ltd sells a handheld meter with a probe that picks up vibrations from animals moving and feeding below ground. Its online service gives each recording a score. Farmers can use that score to flag places worth investigating. How closely it reflects the number or variety of animals on a particular farm remains an open question. [SRC-002](sources.md#src-002), [SRC-003](sources.md#src-003), [SRC-023](sources.md#src-023)
 
-At Newhouse Farm in Hampshire, Sustainable Acoustics used the probe in a pilot that also monitored birds and bats. At the June 2026 open day, the team shared a comparison of birds and bats above an agroforestry plot and a control area. Its account documents use of the soil meter. It gives no paired measurements of soil scores and animals beneath those areas. [SRC-010](sources.md#src-010)
+## From earthworm surveys to a company { #the-company }
 
-## The company
+<span id="research-origins"></span>
+Sorting earthworms by hand can take over an hour for a few spadefuls of soil. In 2023, ecologists at Baker Consultants and soil scientists at the University of Warwick set out to see whether they could survey animals while leaving them in place. Their work is an example of **soil ecoacoustics**, the study of what sounds and vibrations reveal about life below ground. [SRC-049](sources.md#src-049), [SRC-023](sources.md#src-023)
 
-Soil Acoustics Ltd is a private company based in Matlock, Derbyshire. It was incorporated on 16 February 2024. Companies House lists Andrew Baker, Saffron Baker and Gavin Ward as directors. Baker Consultants’ directors established the company to bring the meter to market. [SRC-005](sources.md#src-005), [SRC-006](sources.md#src-006), [SRC-007](sources.md#src-007)
+UK Research and Innovation records £257,758 in grant offers for the 2023–25 project. In February 2024, Baker Consultants’ directors set up Soil Acoustics Ltd in Derbyshire to bring the meter to market. The project team reports that it built a prototype and collected more than 2,000 recordings. [Company history, directors and funding](company-and-product.md) · [SRC-005](sources.md#src-005), [SRC-007](sources.md#src-007), [SRC-008](sources.md#src-008), [SRC-009](sources.md#src-009)
 
-## Research origins
+## What the meter delivers { #the-product }
 
-The starting point was a spade and a time-consuming job. Warwick researchers reported that sorting earthworms from a few spadefuls of soil could take over an hour. Could a farmer leave the worms in place and listen instead? Baker Consultants led a 2023–25 project with the University of Warwick to investigate. UKRI records £257,758 in grant offers. The team reports a prototype and over 2,000 recordings. [SRC-049](sources.md#src-049), [SRC-008](sources.md#src-008), [SRC-009](sources.md#src-009)
+The operator takes a three-minute recording at each sampling point, then uploads the files. In the portal, the operator can listen back, see the **Soil Acoustic Quality Index (SAQI)** for each recording and compare averages across visits. Regular UK prices for a meter and the first year of analysis were **£1,010 for Light** and **£1,120 for Standard**, before VAT and delivery. [Packages, allowances and data rights](company-and-product.md#what-a-buyer-gets) · [SRC-002](sources.md#src-002), [SRC-003](sources.md#src-003), [SRC-016](sources.md#src-016), [SRC-017](sources.md#src-017)
 
-## The product
+## What a change in score can mean { #the-science }
 
-The handheld **Soil Acoustic Meter (SAM)** records three minutes at each sampling point. The operator uploads the files, and the portal returns a proprietary **Soil Acoustic Quality Index (SAQI)** for each recording and a batch average. Regular UK packages cost **£1,010 for Light or £1,120 for Standard**, including one meter and the first year of analysis, before VAT and delivery. [Costs, subscriptions and data rights](company-and-product.md) · [SRC-003](sources.md#src-003), [SRC-015](sources.md#src-015), [SRC-016](sources.md#src-016), [SRC-017](sources.md#src-017)
+A single species can make soil sound busier. In one experiment, adding more red wood ants raised all four acoustic measures the researchers tested. Two woodland studies also found that acoustic measures rose with the number of animals collected. Only one measure in the Australian study tracked how many different types of animal were present. Neither measure did so in the English study. [Field studies and experiments](research-evidence.md) · [SRC-019](sources.md#src-019), [SRC-045](sources.md#src-045), [SRC-046](sources.md#src-046), [SRC-055](sources.md#src-055)
 
-## The science
+Those studies used research indices. For the commercial score, the public evidence gives no independent estimate of how well it predicts animal counts on a new farm, or how large a change exceeds normal variation between readings. [Evidence for the commercial score](research-evidence.md#validation-of-the-commercial-score) · [SRC-003](sources.md#src-003), [SRC-023](sources.md#src-023), [SRC-051](sources.md#src-051), [SRC-054](sources.md#src-054)
 
-At Denton Reserve in Yorkshire, Baker Consultants found differences in acoustic complexity among ten sites. The estate already contained different habitats. The published report gives no paired animal counts or per-site scores. [SRC-054](sources.md#src-054)
+## How the alternatives compare { #the-competition }
 
-Two woodland studies found that acoustic measures rose with the *number of animals* in the soil. At Mount Bold in South Australia, one of two indices also tracked the *number of different invertebrate types* the researchers could distinguish by hand. Neither index showed that relationship at Greno Woods in South Yorkshire. A controlled experiment shows how that can happen. Adding more ants of a single species raised all four sound measures. [SRC-019](sources.md#src-019), [SRC-045](sources.md#src-045), [SRC-046](sources.md#src-046), [SRC-055](sources.md#src-055)
+Soil Acoustics combines a portable meter with paid analysis. Biofonic is trialling a sensor that stays in one place and records conditions over time. Elekon and Frontier Labs sell equipment for teams that want to collect and analyse their own audio. The comparison covers purchase and running costs, trial access and the field evidence for each approach. [Compare monitoring systems](monitoring-systems.md) · [SRC-015](sources.md#src-015), [SRC-027](sources.md#src-027), [SRC-028](sources.md#src-028), [SRC-029](sources.md#src-029), [SRC-041](sources.md#src-041), [SRC-042](sources.md#src-042)
 
-The woodland studies used research indices. The public evidence reviewed leaves two questions open for the commercial score. How well does it predict what lives on a new farm? How much must a score change before it exceeds ordinary variation between readings? A proposed Finnish forest study would pair commercial-meter recordings with soil-fauna samples. [Field studies and their limits](research-evidence.md) · [SRC-003](sources.md#src-003), [SRC-023](sources.md#src-023), [SRC-051](sources.md#src-051)
+## Interpreting a field visit { #website-and-field-guide }
 
-## The competition
+At Newhouse Farm in Hampshire, a monitoring team used the soil meter alongside bird and bat recorders. Its public comparison of an agroforestry plot and a control area reported the birds and bats detected above the crops. To judge a difference **below ground**, a team could record at matched points in the two areas, note soil moisture and count earthworms in adjacent pits. That would give each recording a biological observation to compare it with. [Newhouse Farm pilot](company-and-product.md#origins-and-field-use) · [Recording alongside a worm count](monitoring-systems.md#what-to-compare-a-recording-against) · [SRC-010](sources.md#src-010), [SRC-022](sources.md#src-022), [SRC-048](sources.md#src-048)
 
-Choose a system according to the observation you need. SAM returns a score from a short visit to each point. Biofonic is trialling a fixed sensor for following one spot over time and has no published retail price. Elekon’s ALISO (€898 including Dutch VAT) and Frontier Labs’ recorder with soil microphone (A$1,280 before tax and delivery) give the buyer recordings to analyse. The reviewed studies provide no head-to-head accuracy test. [Compare methods, costs and field evidence](monitoring-systems.md) · [SRC-027](sources.md#src-027), [SRC-028](sources.md#src-028), [SRC-031](sources.md#src-031), [SRC-041](sources.md#src-041), [SRC-042](sources.md#src-042)
-
-For a comparison like the one at Newhouse, a practical next measurement would be to record at matched points in both areas, note moisture and count worms in adjacent soil pits. That would put an independent observation beside each recording. An English survey of 126 fields also found that a second hand sort recovered worms the first count missed. Both measurements need their uncertainty recorded. [Earthworm counts as a field reference](monitoring-systems.md#what-to-compare-a-recording-against) · [SRC-010](sources.md#src-010), [SRC-022](sources.md#src-022), [SRC-048](sources.md#src-048)
-
-## Website and field guide
-
-The website asks operators to stand at least 1 metre away and allow 4 minutes. The guide specifies at least 2 metres and a 3-minute recording after a 15-second delay. The review identifies where buyers encounter these conflicting instructions and report turnaround times. [Website and field guide review](website-review.md) · [SRC-001](sources.md#src-001), [SRC-002](sources.md#src-002), [SRC-003](sources.md#src-003)
-
-Follow individual claims through the [evidence matrix](evidence-matrix.md) and [source register](sources.md). The [knowledge graph](graph/index.md) maps related records. The [agent guide](llm-wiki/index.md) explains how to maintain them.
+Anyone planning repeat visits also needs a consistent sampling procedure. The supplier’s website and field guide give different instructions for timing and operator distance. [Website and field guide review](website-review.md) · [SRC-002](sources.md#src-002), [SRC-003](sources.md#src-003)

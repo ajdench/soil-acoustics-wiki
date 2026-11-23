@@ -4,7 +4,7 @@ okf_version: "0.2"
 
 # Soil Acoustics knowledge bundle
 
-This bundle covers Soil Acoustics Ltd, its research origins, the meter, the evidence for its score and competing systems. The records below identify what supports each claim and where the evidence ends.
+These records support the review of Soil Acoustics Ltd and competing monitoring systems. Start with a concept below to see how a meter reading relates to a field observation. For a specific price, study result or company claim, use the [evidence records](evidence/claims.md) to find the original source and the limits of the finding.
 
 ## Concepts
 

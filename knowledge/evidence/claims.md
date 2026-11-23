@@ -14,7 +14,7 @@ resource: ../../docs/evidence-matrix.md
 - [Evidence of use and distribution](adoption.md) — Corroborated use and distribution.
 - [UK patent](patent.md) — Published patent.
 - [Sampling and interpretation](sampling.md) — Manufacturer instructions.
-- [Cost of a field visit](subscription-cost.md) — Published price and calculation.
+- [UK package prices and time in the field](subscription-cost.md) — Published price and calculation.
 - [Data ownership and reuse](data-rights.md) — Published supplier terms.
 - [A signal in woodland restoration](woodland-signal.md) — Peer-reviewed field evidence.
 - [Event counts and sound diversity](indices.md) — Peer-reviewed experimental evidence.

@@ -7,13 +7,15 @@ status: "stable"
 
 # Research and change log
 
+## 2026-11-23
+
+The editorial review brought the [company history](company-and-product.md), the [field evidence](research-evidence.md) and the [choice of monitoring system](monitoring-systems.md) under one question on the [overview](index.md). The evidence and price checks are dated 22 November. The changes on 23 November concern how those findings are explained and presented.
+
 ## 2026-11-22
 
-- Revised the [overview](index.md) to answer the owner’s questions about Soil Acoustics, its history, product, scientific evidence and competition. Added a visible Search boundary and equal insets around the governing question. The selected navigation item uses a softer green from the same palette.
-
+- Revised the [overview](index.md) to answer the owner’s questions about Soil Acoustics, its history, product, scientific evidence and competition. Added a visible Search border, equal padding around the governing question and a lighter green for the selected menu item.
 - Traced the meter from hand-sorting earthworms to commercial subscriptions and the Newhouse Farm pilot. The [research review](research-evidence.md) compares the woodland and single-species findings. The [systems comparison](monitoring-systems.md) adds a pest detection field trial and a measured limit of manual earthworm counts.
-- Checked the supplier’s wireworm classifier, reported database size and the Denton Reserve field comparison against the original accounts. The [company page](company-and-product.md) also identifies a planned trial that pairs commercial-meter recordings with soil-fauna sampling.
-
+- Checked the supplier’s wireworm classifier, reported database size and the Denton Reserve field comparison against the original accounts. The [company page](company-and-product.md) also identifies a planned trial that would pair meter recordings with soil-fauna sampling.
 - Added the initial review of Soil Acoustics Ltd, its meter, the published operating guide and website. Checked funding, filing, subscription and data-use claims against their respective primary records.
 - Compared research on soil fauna with the scope of the commercial score. Recorded weather, soil conditions and study design where they affect an acoustic result.
 - Added the [monitoring systems comparison](monitoring-systems.md), covering commercially available systems and field trials. Recorded the public purchase or access route for each option.

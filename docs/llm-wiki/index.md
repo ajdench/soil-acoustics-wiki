@@ -7,38 +7,38 @@ status: "draft"
 
 # LLM Wiki entry point
 
-The [monitoring systems comparison](../monitoring-systems.md) is the entry point for hardware and service alternatives. Use the [evidence matrix](../evidence-matrix.md) and [source register](../sources.md) to trace a field result, a product claim or a price. Keep the owner of each claim visible.
+Use this guide to answer questions from the evidence and to maintain the wiki. Start a subject enquiry in the [reader overview](../index.md). Use the [context map](context-map.md) to choose the records for a particular task.
+
+The maintained Markdown under `knowledge/` holds the source and evidence records. The [evidence matrix](../evidence-matrix.md) shows each claim with its limits. The [source register](../sources.md) identifies the original publication. A graph edge, rendered page or model response has no independent authority to establish a new finding.
 
 ## Read first
 
-1. Repository `AGENTS.md`.
-2. `.wiki-standard.yaml`.
-3. `knowledge/index.md`.
-4. [Context map](context-map.md).
-5. [Project status](../project/status.md) and the [research log](../log.md).
-6. The manifest's `roles.authoring_policy` path, or `AUTHORING.md` when no path is mapped, before writing new original English prose.
-7. `DESIGN.md` for rendered changes.
-8. [Knowledge graph](../graph/index.md) query results when Graphify is selected.
+1. Read `AGENTS.md` and `.wiki-standard.yaml` for the repository instructions and the paths assigned to each role.
+2. Read `knowledge/index.md`, then this guide, [project status](../project/status.md) and the [research log](../log.md).
+3. Before writing original English prose, read the policy at `roles.authoring_policy` in the manifest. Use `AUTHORING.md` when the manifest gives no path.
+4. For a rendered change, read `DESIGN.md`. When a current graph exists, query it to locate the records and check those records directly.
 
-The [maintenance guide](maintenance.md) covers source corrections, release changes and output verification.
+## Work with evidence { #operating-model }
 
-## Operating model
+| Operation | Action |
+| --- | --- |
+| Ingest a source | Register the publication and its identity. Add the exact register-row anchor, update the concept and evidence records, link the reader claim, and log the change. |
+| Query a claim | Select the smallest set of records that answers the question. Name who made the observation and what it supports. Link each citation to its exact source row. |
+| Lint an update | Check for contradictions, stale claims, unsupported authority and generated output that differs from its source. Check governing-question repetitions, register links, named-authority URLs and broken links. |
+| Propose a Standard change | Verify and commit the project implementation before recording the proposal. Follow the [Standard proposal workflow](standard-proposals.md) for offline validation, payload review, approval and any later upstream decision. |
 
-- **Ingest**: register a target source, preserve its identity, add its stable exact-row anchor, update the relevant concept and evidence state, add links, and record the change.
-- **Query**: select the smallest authoritative target context, expose uncertainty, and cite registered evidence through individual internal source-row links.
-- **Lint**: find contradictions, stale claims, unsupported authority, ungoverned exact repetitions of the declared canonical question, bare or misdirected source identities, unregistered named-authority URLs, missing links, and generated-output drift.
-- **Propose**: after a user-authored reusable improvement is implemented, verified, and committed locally, preserve it in a tracked [Standard proposal](standard-proposals.md). Validate direct states and terminal transitions offline, prepare a disposable scrubbed payload, and bind approval to the exact digest and governed form revision. The user submits; intake, Standard decision, exact registry/release evidence, and optional adoption remain separate authorities. Never reuse the Standard's sole historical bridge.
+Apply the DenchCo ASD-STE100-inspired 80% house style to new prose. The percentage is a house-style aim. Preserve the source meaning, protected text, necessary terms and uncertainty. Document material exceptions in the authoring policy and follow explicit user instructions and stricter local rules. Applying the policy does not authorise bulk rewrites or a change of Standard pin.
 
-Never treat an LLM answer, rendered page, or graph edge as new evidence.
+## Verify and hand over
 
-Apply the DenchCo ASD-STE100-inspired 80% house style in the mapped authoring policy (`AUTHORING.md` when no path is mapped) to all new original English Wiki prose. 80% is a pragmatic aim, not a computed score or a claim of ASD-STE100 compliance. Review meaning and source fidelity before style, preserve protected text and necessary technical terms, and record material exceptions with their scope and reason. Follow explicit user instructions and stricter applicable local policy. Do not bulk-rewrite existing prose or change consumer pins to apply the default.
+Use the [maintenance guide](maintenance.md) for the managed preview, source-link checks and release verification. In a Standard Production maintenance workspace, `DKBWS-PROV-001` requires a Jujutsu (JJ) commit for persistent changes before the turn ends.
 
-In a Standard Production maintenance workspace, a file-changing development turn remains incomplete until its persistent changes are recorded in the required end-of-turn JJ commit under `DKBWS-PROV-001`.
+Under `DKBWS-PROMPT-002`, development responses link to live Human or LLM Wiki pages using the configured canonical HTTP(S) origin. A plain repository path can identify an artifact without a Wiki route. For a managed local preview, `service:preview` checks all twelve registration fields, the installed and loaded job, the canonical URL and its identity marker. Distribution and CI leave the live `DKBWS-RUNTIME-002` check to the maintainer. Check captured response links with `--managed-live`, including Markdown, HTML and plain GFM links. `STD-VAL-007` covers the host's limit on checking uncaptured output.
 
-Use the tracked proposal workflow for a governed upstream handoff. If the form, label, marker search, provenance, or digest evidence is unavailable or ambiguous, preserve the record and stop; filing does not amend the pinned Standard or authorize migration.
+## Choose follow-up work
 
-Development responses route Human or LLM Wiki destinations through the configured live canonical HTTP(S) origin under `DKBWS-PROMPT-002`. File, editor, absolute-path, and repository-relative Markdown links do not substitute for Wiki navigation; plain repository paths identify only implementation artifacts with no rendered route. Captured drafts check Markdown, HTML links, and plain GFM-autolinked URLs. Managed local drafts add `--managed-live` to require exact service identity, canonical URL equality, and HTTP 200 for every displayed route; `STD-VAL-007` remains the host boundary for uncaptured output.
+Complete the requested scope first. At the end of every development cycle, assess the continuing subject, the governing question and content maturity. Prioritise subject content and evidence. Address any failed or unrun required check before optional content work.
 
-Persistent preview handoff uses `npm run service:preview` only after all twelve registry fields, the exact installed/loaded job, canonical URL, and marker identity pass. Live service evidence belongs to maintainer verification; distribution/CI leaves `DKBWS-RUNTIME-002` not checked.
+Use [project status](../project/status.md), the [validation queue](../validation-queue.md) and relevant handoff evidence. Reopen parked or evidence-blocked work only for new evidence, a due recheck or explicit instruction. Record `blocked_by`, `reopen_when` and `last_checked`.
 
-Complete the requested scope before recommending more work. At the end of every development cycle, assess the Wiki's continuing subject, governing question when declared, evidence and content maturity. Prioritise subject content and evidence work; address a failed or unrun required check before optional content work. Include no more than three prioritised Next Steps. Each must fit one follow-up pass and state `Proposed update:`, `Why it matters:` and `Done when:`. Suggestions are recommendations, not continuation authority. Use project status, the validation queue and relevant handoff evidence to exclude completed work. Do not reopen bounded, parked or evidence-blocked work without new evidence, a due scheduled recheck or explicit user instruction. Parked work retains `blocked_by`, `reopen_when` and `last_checked`. If no grounded content update or required follow-up qualifies, state `No further grounded content update is available.` Never invent filler. Check captured drafts with `response:next-steps:check` when available; format checks do not prove grounding or intercept uncaptured responses.
+Give no more than three prioritised Next Steps. Each must fit one follow-up pass and specify `Proposed update:`, `Why it matters:` and `Done when:`. These are recommendations, not continuation authority. If none qualifies, write `No further grounded content update is available.` Use `response:next-steps:check` on captured drafts. The checker verifies format. A maintainer assesses grounding and eligibility.

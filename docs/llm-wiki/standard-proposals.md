@@ -7,7 +7,9 @@ status: "draft"
 
 # Standard proposals
 
-Potentially reusable improvements remain owned by `Soil Acoustics`. Each proposal has one canonical, schema-valid JSON record under `standard-proposals/`. Generated previews under `output/standard-proposals/` are ignored and disposable.
+This wiki has two proposals for improving the DenchCo Standard. The project has implemented and verified both changes locally. Approval to submit is pending, and neither has an upstream issue. The project has yet to consider adopting an upstream release for either change.
+
+Each proposal has a tracked JSON record under `standard-proposals/`. Use that record for its current status. The workflow generates a disposable preview in `output/standard-proposals/`.
 
 ## Changes proposed from this wiki
 
@@ -16,7 +18,7 @@ Potentially reusable improvements remain owned by `Soil Acoustics`. Each proposa
 | Search contrast against the header (`header-search-boundary`) | A legible label could pass even when the button fill blended into the header. | Require either a fill or a continuous perimeter with 3:1 contrast against the adjacent header. Measure the visible control at rest, on hover and at keyboard focus in both palettes. Keep the separate keyboard focus check. |
 | Equal insets around the governing question (`governing-question-insets`) | The marker and rail passed with 12 pixels on the left and zero padding on the other sides. | Measure equal, positive space from each inside border to the paragraph box. Test the wrapped mobile question and a desktop question. A missing inset or a paragraph margin that changes the spacing must fail. |
 
-The two proposal records are prepared for review. Submission and adoption are pending. The selection colour in the navigation is a project design choice documented in `DESIGN.md`.
+The records identify the implementation commit and pinned Standard revision for each change. The navigation selection colour is a separate project design choice documented in `DESIGN.md`.
 
 ## Local workflow
 
@@ -30,10 +32,18 @@ The two proposal records are prepared for review. Submission and adoption are pe
 
 Do not include consumer files, secrets, private absolute paths, personal or confidential data, restricted evidence, public vulnerability detail, or material the project lacks authority to share.
 
-## Separate authority
+## Who can change each status { #separate-authority }
 
-The tracked workflow distinguishes local verification, payload approval/submission, explicit Standard classification and decision, immutable release inclusion, and optional adoption back into this project. Record each transition in its own JJ phase. Directly edited records must satisfy the same invariants as command-produced records, and issue linkage, decision, release inclusion, and adoption are terminal workflow-v1 transitions. Issue closure is not acceptance; acceptance is not release; and release does not change `.wiki-standard.yaml`, conformance status, deviations, or the pinned revision automatically.
+Record each transition in its own Jujutsu phase. A direct edit to a record must meet the same conditions as a CLI change. In workflow v1, completed issue linkage, decision, release inclusion and adoption are terminal transitions.
 
-Release evidence requires the registry bytes at the exact full recorded revision, proof that it strictly descends from the release revision, a matching public release with the exact tag, `draft: false`, and `immutable: true`, and tag resolution to the recorded release revision. Never use `pre-registry-local-history`: workflow v1 reserves it for one exact existing UK Digital Health `DKBWS-LINK-002` Standard-registry entry, not consumer work.
+| Stage | Evidence required |
+| --- | --- |
+| Local implementation | The project records its verified commit and pinned Standard revision. |
+| Issue submission | The user submits the approved payload. Link the issue only after its marker and payload match unambiguously. |
+| Standard decision | Record the explicit upstream classification and decision. Issue closure alone leaves acceptance unresolved. |
+| Release inclusion | Obtain the registry bytes at the exact full revision. Verify that the registry revision strictly descends from the release revision. The public release must have the exact tag, `draft: false` and `immutable: true`. The tag must resolve to the recorded release revision. |
+| Project adoption | The project can choose whether to adopt the released change. Record the authorised migration separately before changing its pin, conformance status or deviations. |
 
-If the form, required label, marker search, provenance, exact digest, or remote result is missing, changed, duplicated, or ambiguous, stop with the durable local record. Never substitute an automated issue write or attachment upload.
+Workflow v1 reserves `pre-registry-local-history` for one existing UK Digital Health `DKBWS-LINK-002` Standard-registry entry. Consumer proposals may not use that exception.
+
+If the form, label, marker search, provenance, exact digest or remote result is missing, changed, duplicated or ambiguous, stop and retain the local record. The CLI must never submit an issue or upload an attachment.
