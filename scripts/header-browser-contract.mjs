@@ -215,8 +215,7 @@ export async function inspectHeaderControls(page, { scheme, label = scheme, hove
     }
     const hoverMetrics = assertHeaderSnapshot(await measureHeader(page), { scheme, label: `${label}/hover`, state: "hover" });
     samples.at(-1).minimumBoundaryContrast = hoverMetrics.minimumBoundaryContrast;
-    // Moving off the control before release cancels activation. Each mouse-down
-    // exercises the normal pressed CSS without opening the drawer or search.
+    // Exercise the real pointer-down state without changing reader preferences.
     await page.mouse.down();
     try {
       const pressed = await measureHeader(page);
@@ -226,8 +225,23 @@ export async function inspectHeaderControls(page, { scheme, label = scheme, hove
       assert.equal(action.background, snapshot.tokens["header-pressed"], `${label}: shared pressed fill`);
       assert.equal(action.foreground, snapshot.tokens["header-pressed-text"], `${label}: shared pressed ink`);
     } finally {
+      // Linux WebKit can keep the next control active after a drag-off release.
+      // Release on the original target and suppress only this measurement click.
+      const guard = await control.evaluateHandle(element => {
+        const abort = new AbortController();
+        element.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }, { capture: true, once: true, signal: abort.signal });
+        return abort;
+      });
+      try {
+        await page.mouse.up();
+      } finally {
+        await guard.evaluate(abort => abort.abort());
+        await guard.dispose();
+      }
       await page.mouse.move(0, 200);
-      await page.mouse.up();
     }
     hovered.push(samples);
   }
