@@ -94,8 +94,9 @@ for (const [engine, browserType, width] of [["chromium", chromium, 1440], ["webk
     await checkHead(page, "");
     await page.locator('article a[href*="monitoring-systems"]').first().click();
     await page.waitForURL(new URL("monitoring-systems/", base).href);
-    await checkHead(page, "monitoring-systems/");
+    // Instant navigation updates the address before replacing the article and its metadata.
     await page.getByRole("heading", { name: "Comparing soil acoustic monitoring systems" }).waitFor();
+    await checkHead(page, "monitoring-systems/");
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
       `Comparison overflows the ${width}px viewport`);
     const citation = page.locator('article sup a[href*="sources/#src-"], article a[href*="sources/#src-"]:has(sup)').first();
