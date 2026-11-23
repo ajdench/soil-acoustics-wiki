@@ -9,7 +9,7 @@ status: "stable"
 
 ## 2026-11-23
 
-The appearance switch, page-width switch and Search now share a pale green surface against the dark header. The current page and current section use a slightly stronger green highlight and bold text. Both sidebars use the same treatment without a leading stripe. See the [Standard proposals](llm-wiki/standard-proposals.md) for the upstream work.
+The appearance switch, page-width switch and Search share one height, a pale green resting fill and green hover and press states derived from the wiki accent. The current page and current section use a slightly stronger green highlight and bold text. Both sidebars use the same treatment without a leading stripe. See the [Standard proposals](llm-wiki/standard-proposals.md) for the upstream change and the exception to the pinned header colours.
 
 The editorial review brought the [company history](company-and-product.md), the [field evidence](research-evidence.md) and the [choice of monitoring system](monitoring-systems.md) under one question on the [overview](index.md). The evidence and price checks are dated 22 November. The changes on 23 November concern how those findings are explained and presented.
 

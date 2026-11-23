@@ -37,4 +37,9 @@ capabilities:
   local_browser_runtimes: true
   browser_verification: true
   jujutsu: true
-deviations: []
+deviations:
+  - requirement: "DKBWS-DESIGN-002"
+    status: "waived"
+    authority: "Soil Acoustics wiki project owner"
+    reviewed_at: "2026-11-23"
+    reason: "The owner selected accent-derived header interaction colours in place of the fixed light and dark brown hover pairs in rc.17. The exception is limited to those colour pairs. The project continues to test header geometry, contrast, focus, keyboard operation and preference persistence. See DenchCo Standard PR 70."

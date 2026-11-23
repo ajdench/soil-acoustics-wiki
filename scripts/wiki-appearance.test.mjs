@@ -99,9 +99,11 @@ test("quantized saturated, dark, neutral and generated seeds retain contrast", (
         `${accent} ${name} header selected text`);
       assert.ok(contrast(palette.headerHoverText, palette.headerHover) >= 4.5,
         `${accent} ${name} header hover text`);
-      assert.deepEqual([palette.headerHover, palette.headerHoverText], name === "light"
-        ? ["#aaa08d", "#29251f"] : ["#948774", "#201c17"],
-      `${accent} ${name} must keep the shared brown hover independent of branding`);
+      assert.equal(palette.headerSelected, palette.headerControlSurface);
+      assert.equal(palette.headerSelectedText, palette.headerControlText);
+      assert.equal(new Set([palette.headerControlSurface, palette.headerHover, palette.headerPressed]).size, 3);
+      assert.ok(contrast(palette.headerHover, accent) >= 3 && contrast(palette.headerPressed, accent) >= 3);
+      assert.ok(contrast(palette.headerPressedText, palette.headerPressed) >= 4.5);
       for (const button of [palette.accent, palette.accentDark, palette.accentDarker]) assert.ok(contrast(palette.accentContrast, button) >= 4.5);
     }
   }
@@ -125,6 +127,18 @@ test("soil-green navigation uses soft palette surfaces while the header retains 
   for (const palette of [light, dark]) assert.equal(palette.headerSurface, "#32541c");
 });
 
+test("interaction colours follow the supplied hue and preserve neutral brands", () => {
+  const palettes = ["#32541c", "#244965", "#58264c", "#555555"].map(accent => deriveAppearance({ ...config, accent }).light);
+  for (const state of ["headerControlSurface", "headerHover", "headerPressed"]) {
+    assert.equal(new Set(palettes.map(p => p[state])).size, palettes.length);
+    for (const [index, dominant] of [[0, 1], [1, 2], [2, 0]]) {
+      const channels = palettes[index][state].slice(1).match(/../g).map(hex => parseInt(hex, 16));
+      assert.equal(channels[dominant], Math.max(...channels));
+    }
+    assert.equal(new Set(palettes[3][state].slice(1).match(/../g)).size, 1);
+  }
+});
+
 test("generated values are deterministic and do not mutate caller configuration", () => {
   const original = structuredClone(config);
   const first = deriveAppearance(config);
@@ -140,10 +154,8 @@ test("generated values are deterministic and do not mutate caller configuration"
   assert.equal((css.match(/^  --md-primary-bg-color:/gm) || []).length, 1);
   assert.match(css, /--brand-accent: #e1efdd;/);
   assert.match(css, /--header-surface: #e1efdd;/);
-  assert.match(css, /--layout-width-control-hover-color: var\(--header-hover-text\);/);
-  assert.match(css, /--layout-width-control-hover-background: var\(--header-hover\);/);
-  assert.match(css, /--layout-width-control-selected-background: var\(--header-selected\);/);
-  assert.doesNotMatch(css, /--layout-width-control-(?:hover|selected)-background:\s*transparent/);
+  assert.match(css, /--header-hover: #[a-f0-9]{6};/);
+  assert.match(css, /--header-pressed: #[a-f0-9]{6};/);
   assert.doesNotMatch(css, /\.md-search__button\s*\{\s*background-color:\s*transparent/);
   assert.match(css, /background-color: var\(--selected-background\)/);
   assert.match(css, /blockquote\.governing-question > p\s*\{\s*color: var\(--question-text\)/);

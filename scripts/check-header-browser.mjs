@@ -114,7 +114,7 @@ try {
   }
   assert.deepEqual(Object.keys(report.engines).sort(), ["chromium", "webkit"], "Both browser engines must finish");
   assert.equal(report.cases.length, 96, "Every fixture, appearance, width, viewport and zoom case must finish");
-  assert.equal(report.negativeCases.length, 22, "Both engines must refuse every rendered defect");
+  assert.equal(report.negativeCases.length, 26, "Both engines must refuse every rendered defect");
   assert.equal(report.screenshots.length, 8, "Generic screenshots must cover both engines, appearances and device classes");
   report.completedMatrixCases = report.cases.length;
   report.ok = true;
@@ -172,11 +172,17 @@ async function assertFocus(page, selector) {
   const result = await page.locator(selector).evaluate(element => {
     const target = element.matches("input.md-option") ? [...element.form.querySelectorAll("label")].find(label => !label.hidden && getComputedStyle(label).display !== "none") : element;
     const style = getComputedStyle(target), header = getComputedStyle(document.querySelector(".md-header"));
-    return { focused: document.activeElement === element, style: style.outlineStyle, width: parseFloat(style.outlineWidth), color: style.outlineColor, header: header.backgroundColor };
+    return { focused: document.activeElement === element, style: style.outlineStyle, width: parseFloat(style.outlineWidth),
+      offset: parseFloat(style.outlineOffset), fill: style.backgroundColor, ink: style.color, color: style.outlineColor, header: header.backgroundColor };
   });
   assert.ok(result.focused && result.style !== "none" && result.width >= 2, `Visible keyboard focus required for ${selector}`);
   assert.ok(contrastRatio(result.color, result.header) >= 3, `Keyboard focus boundary must contrast with header for ${selector}`);
   const snapshot = await measureHeader(page);
+  assert.equal(result.width, 3, `Shared 3px focus ring for ${selector}`);
+  assert.equal(result.offset, 3, `Shared focus ring offset for ${selector}`);
+  assert.equal(result.color, snapshot.tokens["header-text"], `Shared header focus colour for ${selector}`);
+  assert.equal(result.fill, snapshot.tokens["header-control-surface"], `Keyboard-only focus keeps the shared rest fill for ${selector}`);
+  assert.equal(result.ink, snapshot.tokens["header-control-text"], `Keyboard-only focus keeps the shared rest ink for ${selector}`);
   result.minimumBoundaryContrast = assertHeaderSnapshot(snapshot, { scheme: snapshot.scheme, label: "Keyboard focus", state: "focus" }).minimumBoundaryContrast;
   return result;
 }
@@ -256,12 +262,14 @@ async function negativeJourneys(page, engine) {
     ["translucent-rest", ".layout-width-toggle { background-color:rgba(0,0,0,.5)!important; }", /opaque/],
     ["off-centre-svg", ".md-header__button:not(.md-logo)>svg { left:40%!important; }", /centred/],
     ["revealed-native-label", ".md-header label[hidden] { display:block!important; }", /native.*(?:visible|hidden)/],
-    ["invisible-search-boundary", ".md-search__button { border-color:transparent!important; }", /boundary contrast/],
-    ["invisible-width-boundary", ".layout-width-toggle { border-color:transparent!important; }", /boundary contrast/],
-    ["incomplete-palette-boundary", ".md-header__option label { border-inline-end-color:transparent!important; }", /boundary contrast/],
+    ["invisible-search-boundary", ".md-search__button { border-color:transparent!important; }", /perimeter/],
+    ["invisible-width-boundary", ".layout-width-toggle { border-color:transparent!important; }", /perimeter/],
+    ["incomplete-palette-boundary", ".md-header__option label { border-inline-end-color:transparent!important; }", /perimeter/],
     ["unreadable-shortcut", ".md-search__button::after { color:var(--header-control-surface)!important; }", /shortcut/],
     ["colour-crossfade", ".layout-width-toggle { transition:color .2s,background-color .2s!important; }", /crossfade/],
-    ["wrong-hover", ".layout-width-toggle:hover { background-color:#ff0000!important; }", /brown hover/],
+    ["wrong-hover", ".layout-width-toggle:hover { background-color:#ff0000!important; }", /shared hover fill/],
+    ["width-bottom-stripe", ".layout-width-toggle[aria-pressed=true] { box-shadow:inset 0 -2px 0 white!important; }", /inset shadow/],
+    ["wrong-press", ".layout-width-toggle:active { background-color:#ff0000!important; border-color:#ff0000!important; }", /shared pressed fill|contrast/],
   ];
   const results = [];
   for (const [name, css, expected] of probes) {

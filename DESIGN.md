@@ -47,7 +47,8 @@ The appearance generator derives contrast-adjusted colours for each surface from
 | Selected navigation fill | `#dbead3` | `#333f2c` |
 | Selected navigation text | `#365820` | `#b7dfa2` |
 | Header control fill | `#d4e4cd` | `#d4e4cd` |
-| Selected width control fill | `#b5cda9` | `#b5cda9` |
+| Hovered header control fill | `#b5cda9` | `#b5cda9` |
+| Pressed header control fill | `#9ab989` | `#9ab989` |
 | Header control text and icons | `#21291d` | `#21291d` |
 | Page | `#f8fbf7` | `#0f130e` |
 | Body text | `#1f231d` | `#e8ede5` |
@@ -55,11 +56,11 @@ The appearance generator derives contrast-adjusted colours for each surface from
 | Muted text | `#525750` | `#b4b9b2` |
 | Border | `#80857e` | `#838881` |
 | Focus | `#365820` | `#b7dfa2` |
-| Hover | `#aaa08d` | `#948774` |
-| Hover text | `#29251f` | `#201c17` |
 | Accent overlay | `rgb(64 99 43 / 10%)` | `rgb(164 204 143 / 10%)` |
 
-Measure each header control against the surrounding brand green. At rest, the sage fill gives 6.52:1 contrast. The selected Wide fill gives 5.07:1. The dark text and icons give 11.27:1 against the rest fill and 8.77:1 against the selected fill. Use the rest fill for the shared perimeter so each action remains distinct on hover. Keyboard focus adds a separate outer ring. Check the compact drawer, theme and Search actions on mobile and measure the Search shortcut against its own fill.
+All header controls use the same sage fill at rest. The hover and pointer-down fills use progressively stronger shades of the project accent. The three fills give 6.52:1, 5.07:1 and 4.00:1 contrast against the green header. Text and icons give 11.27:1, 8.77:1 and 6.91:1 against those fills. Keep the Search shortcut on the same surface as its label. Keyboard focus adds a 3px outer ring with a 3px gap.
+
+The theme switch, Wide and Search share the same top and bottom edges, 1px perimeter and corner radius. A selected Wide label is bold. Its accessible name describes the next action and `aria-pressed` reports the saved choice. Use the same treatment for the drawer, theme and Search controls on small screens.
 
 ## Reader components
 

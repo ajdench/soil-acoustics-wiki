@@ -1,21 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { assertHeaderSnapshot, assertNoColourTransition, contrastRatio, headerHover } from "./header-browser-contract.mjs";
+import { assertHeaderSnapshot, assertNoColourTransition, contrastRatio } from "./header-browser-contract.mjs";
 
 const stationary = { transitionProperty: "none", transitionDuration: "0s", transitionDelay: "0s" };
 const rendered = { content: '"Search"', display: "block", visibility: "visible", opacity: 1, width: 20, height: 20 };
 function fixture() {
-  const tokens = { "header-surface": "rgb(225, 239, 221)", "header-text": "rgb(31, 39, 43)", "header-control-text": "rgb(31, 39, 43)", "header-control-surface": "rgb(237, 242, 245)", "header-selected": "rgb(214, 226, 234)", "header-selected-text": "rgb(31, 39, 43)" };
-  const base = { width: 32, height: 32, centreY: 24, radii: [8, 8, 8, 8], opacity: 1, transition: stationary, foreground: tokens["header-control-text"], background: tokens["header-control-surface"],
-    borders: Array.from({ length: 4 }, () => ({ width: 1, color: tokens["header-text"], style: "solid" })) };
+  const tokens = { "header-surface": "rgb(225, 239, 221)", "header-text": "rgb(31, 39, 43)", "header-control-text": "rgb(245, 249, 246)", "header-control-surface": "rgb(33, 67, 40)", "header-selected": "rgb(214, 226, 234)", "header-selected-text": "rgb(31, 39, 43)" };
+  const base = { width: 32, height: 32, centreY: 24, radii: [8, 8, 8, 8], opacity: 1, shadow: "none", transition: stationary, foreground: tokens["header-control-text"], background: tokens["header-control-surface"],
+    borders: Array.from({ length: 4 }, () => ({ width: 1, color: tokens["header-control-surface"], style: "solid" })) };
   return {
     scheme: "default", width: "wide", rem: 20, zoom: 1, tokens, header: { background: tokens["header-surface"] },
     visiblePaletteLabels: 1, revealedHiddenLabels: 0, hiddenTabStops: 0, pageOverflow: 0,
     logos: [{ background: "rgba(0, 0, 0, 0)", borderWidth: 0, boxShadow: "none" }],
     controls: [
       { ...base, name: "appearance", kind: "icon", square: true, svg: { width: 18, height: 18, offsetX: 0, offsetY: 0 } },
-      { ...base, name: "Wide", kind: "width", square: false, width: 70, background: tokens["header-selected"], group: { offsetX: 0, offsetY: 0 } },
-      { ...base, name: "Search", kind: "search", borders: Array.from({ length: 4 }, () => ({ width: 2, color: tokens["header-text"], style: "solid" })), square: false, width: 180, searchParts: { icon: tokens["header-control-text"], shortcutForeground: tokens["header-control-text"], shortcutBackground: tokens["header-control-surface"], beforeTransition: stationary, afterTransition: stationary, rendered: { magnifier: rendered, shortcut: rendered } } },
+      { ...base, name: "Wide", kind: "width", square: false, width: 70, group: { offsetX: 0, offsetY: 0 } },
+      { ...base, name: "Search", kind: "search", borders: Array.from({ length: 4 }, () => ({ width: 1, color: tokens["header-control-surface"], style: "solid" })), square: false, width: 180, searchParts: { icon: tokens["header-control-text"], shortcutForeground: tokens["header-control-text"], shortcutBackground: tokens["header-control-surface"], beforeTransition: stationary, afterTransition: stationary, rendered: { magnifier: rendered, shortcut: rendered } } },
     ],
   };
 }
@@ -35,25 +35,25 @@ for (const [name, mutate, message] of [
   ["hidden keyboard stop", value => value.hiddenTabStops = 1, /tab order/],
   ["framed logo", value => value.logos[0].background = "rgb(255,255,255)", /unframed/],
   ["brand removed from header", value => value.header.background = "rgb(255,255,255)", /brand surface/],
-  ["missing Search boundary", value => { value.controls[2].borders.forEach(border => { border.width = 0; }); }, /boundary contrast/],
-  ["low-contrast mobile Search boundary", value => { value.controls[2].kind = "mobile-search"; value.controls[2].borders.forEach(border => { border.color = value.header.background; }); }, /boundary contrast/],
-  ["incomplete palette boundary", value => { value.controls[0].borders[1].width = 0; }, /boundary contrast/],
-  ["branded controls that rely on outlines alone", value => { value.configured = true; }, /configured action fill/],
-  ["width button with only a bottom edge", value => { value.controls[1].borders = value.controls[1].borders.map((edge, i) => ({ ...edge, width: i === 2 ? 2 : 0 })); }, /boundary contrast/],
+  ["missing Search boundary", value => { value.controls[2].borders.forEach(border => { border.width = 0; }); }, /perimeter/],
+  ["low-contrast mobile Search boundary", value => { value.controls[2].kind = "mobile-search"; value.controls[2].borders.forEach(border => { border.color = value.header.background; }); }, /perimeter/],
+  ["incomplete palette boundary", value => { value.controls[0].borders[1].width = 0; }, /perimeter/],
+  ["branded controls that rely on outlines alone", value => { value.configured = true; value.tokens["header-control-surface"] = value.header.background; value.controls[0].background = value.header.background; value.tokens["header-control-text"] = value.controls[0].foreground = "rgb(0,0,0)"; }, /configured action fill/],
+  ["width button with only a bottom edge", value => { value.controls[1].borders = value.controls[1].borders.map((edge, i) => ({ ...edge, width: i === 2 ? 2 : 0 })); }, /perimeter/],
   ["invisible mobile Search magnifier stroke", value => { value.controls[2].kind = "mobile-search"; value.controls[2].searchStrokes = [value.controls[2].background]; }, /magnifier stroke contrast/],
   ["unreadable Search magnifier", value => value.controls[2].searchParts.icon = value.controls[2].background, /magnifier/],
   ["unreadable Search shortcut", value => value.controls[2].searchParts.shortcutForeground = value.controls[2].background, /shortcut/],
   ["hidden Search magnifier", value => value.controls[2].searchParts.rendered.magnifier = { ...rendered, opacity: 0 }, /rendered and readable/],
-  ["wrong selected semantic token", value => value.controls[1].background = value.tokens["header-control-surface"], /semantic background/],
+  ["Wide with an extra bottom line", value => { value.controls[1].shadow = "inset 0 -2px 0 black"; }, /inset shadow/],
+  ["wrong selected semantic token", value => value.controls[1].background = value.tokens["header-selected"], /shared rest background|contrast/],
   ["horizontal reflow failure", value => value.pageOverflow = 2, /overflow/],
-  ["low contrast rest token", value => { value.tokens["header-control-text"] = "rgb(230,230,230)"; value.controls[0].foreground = value.tokens["header-control-text"]; }, /contrast/],
+  ["low contrast rest token", value => { value.tokens["header-control-text"] = value.tokens["header-control-surface"]; value.controls[0].foreground = value.tokens["header-control-text"]; }, /contrast/],
 ]) test(`rejects ${name}`, () => { const value = fixture(); mutate(value); assert.throws(() => inspect(value), message); });
 
 test("foreground alpha is composited for accessible contrast", () => {
   assert.equal(contrastRatio("rgb(0,0,0)", "rgb(255,255,255)"), 21);
   assert.ok(contrastRatio("rgba(0,0,0,.2)", "rgb(255,255,255)") < 2);
   assert.throws(() => contrastRatio("rgb(0,0,0)", "rgba(255,255,255,.5)"), /opaque/);
-  for (const pair of Object.values(headerHover)) assert.ok(contrastRatio(pair.foreground, pair.background) >= 4.5);
 });
 test("crossfades and delayed colour switching are refused independently of geometry", () => {
   assert.throws(() => assertNoColourTransition({ ...stationary, transitionProperty: "color, background-color", transitionDuration: "0s, .2s" }, "action"), /crossfade/);

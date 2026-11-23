@@ -154,14 +154,17 @@ export function deriveAppearance(value) {
     const direction = lightControls ? 1 : -1;
     palette.headerSurface = palette.headerBackground;
     palette.headerControlSurface = readableTone(seed, lightControls ? 0.9 : 0.38,
-      [palette.headerSurface], 3, direction, Math.min(seed.c, 0.035));
-    palette.headerSelected = readableTone(seed, lightControls ? 0.82 : 0.46,
-      [palette.headerSurface], 3, direction, Math.min(seed.c, 0.055));
+      [palette.headerSurface], 4.1, direction, Math.min(seed.c, 0.035));
+    palette.headerHover = readableTone(seed, lightControls ? 0.82 : 0.46,
+      [palette.headerSurface], 3.55, direction, Math.min(seed.c, 0.055));
+    palette.headerPressed = readableTone(seed, lightControls ? 0.75 : 0.53,
+      [palette.headerSurface], 3, direction, Math.min(seed.c, 0.075));
     palette.headerControlText = readableTone(seed, lightControls ? 0.27 : 0.97,
-      [palette.headerControlSurface, palette.headerSelected], 4.5, -direction, Math.min(seed.c, 0.025));
+      [palette.headerControlSurface, palette.headerHover, palette.headerPressed], 4.5, -direction, Math.min(seed.c, 0.025));
+    palette.headerHoverText = palette.headerControlText;
+    palette.headerPressedText = palette.headerControlText;
+    palette.headerSelected = palette.headerControlSurface;
     palette.headerSelectedText = palette.headerControlText;
-    palette.headerHover = name === "light" ? "#aaa08d" : "#948774";
-    palette.headerHoverText = name === "light" ? "#29251f" : "#201c17";
     const surfaces = [palette.background, palette.surface, palette.questionBackground];
     for (const role of ["accent", "accentDark", "accentDarker", "accentVisited", "text", "muted"]) checkPair(palette[role], surfaces, 4.5, `${name}.${role}`);
     for (const role of ["accentLight", "border", "focus"]) checkPair(palette[role], surfaces, 3, `${name}.${role}`);
@@ -188,12 +191,6 @@ body[data-md-color-primary],
 body[data-md-color-accent],
 body[data-md-color-scheme] {
 ${declarations(light)}
-  --layout-width-control-rest-color: var(--header-control-text);
-  --header-control-border: var(--header-control-surface);
-  --layout-width-control-hover-color: var(--header-hover-text);
-  --layout-width-control-selected-color: var(--header-selected-text);
-  --layout-width-control-hover-background: var(--header-hover);
-  --layout-width-control-selected-background: var(--header-selected);
   --md-primary-fg-color: var(--primary);
   --md-primary-fg-color--light: var(--accent-light);
   --md-primary-fg-color--dark: var(--accent-dark);
@@ -218,7 +215,6 @@ ${declarations(dark)}
 .md-header .md-header__topic {
   color: var(--header-text);
 }
-.layout-width-toggle[aria-pressed="true"] { box-shadow: inset 0 -2px 0 currentColor; }
 .md-nav--primary .md-nav__item--active > .md-nav__link,
 .md-nav--primary .md-nav__item .md-nav__link--active,
 .md-nav--secondary .md-nav__link--active {

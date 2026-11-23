@@ -13,7 +13,9 @@ Each issue proposal has a tracked JSON record under `standard-proposals/`. Use t
 
 ## Changes proposed from this wiki
 
-The header and sidebar review also produced an implementation pull request. It gives the header controls a shared, distinguishable surface and tests their contrast against the header in both themes. It gives the current page and section a matching tinted background and a bold label, with the current location exposed to screen readers. The wiki uses these changes locally and remains pinned to `v0.1.0-rc.17`. [DenchCo Standard pull request 70](https://github.com/denchco/knowledge-base-wiki-standard/pull/70)
+The header and sidebar review also produced an implementation pull request. It gives the header controls the same painted height, outline and resting fill. Hover and press colours come from the wiki accent. The current page and section share a tinted background and a bold label, with the current location exposed to screen readers. [DenchCo Standard pull request 70](https://github.com/denchco/knowledge-base-wiki-standard/pull/70)
+
+This wiki remains pinned to `v0.1.0-rc.17`. That release specifies brown hover colours for both themes. The project owner chose the green accent family instead. The manifest records that colour exception under `DKBWS-DESIGN-002`. The project still tests geometry, contrast, focus, search and reader preferences. [Released header requirement](https://github.com/denchco/knowledge-base-wiki-standard/blob/b781907eea212c4ddcbd64183997d0982d4caf40/docs/spec/requirements.md#L27)
 
 | Proposed change | What the released checks missed | Acceptance test |
 | --- | --- | --- |

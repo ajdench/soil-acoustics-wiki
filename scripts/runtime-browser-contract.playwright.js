@@ -858,7 +858,7 @@ export default async (page, options = {}) => {
       controlText: control?.textContent.trim() || "",
       controlPressed: control?.getAttribute("aria-pressed"),
       controlBackground: control ? getComputedStyle(control).backgroundColor : "",
-      controlBoxShadow: control ? getComputedStyle(control).boxShadow : "",
+      controlWeight: control ? Number(getComputedStyle(control).fontWeight) : 0,
       headerBackground: header ? getComputedStyle(header).backgroundColor : "",
       headerColour: header ? getComputedStyle(header).color : "",
       searchBackground: search ? getComputedStyle(search).backgroundColor : "",
@@ -943,7 +943,7 @@ export default async (page, options = {}) => {
   await page.waitForFunction(() => document.documentElement.dataset.layoutWidth === "wide");
   const wideHeaderControls = await inspectHeaderControls(page, { scheme: "default", label: "Wide header", hover: false });
   const wideHeader = await measureHeader();
-  check(wideHeader.controlBackground === wideHeaderControls.snapshot.tokens["header-selected"], "Wide at rest must use its opaque selected semantic surface");
+  check(wideHeader.controlBackground === wideHeaderControls.snapshot.tokens["header-control-surface"], "Selected Wide shares the resting control surface");
   check(wideHeader.mode === "wide", "The width control must activate Wide mode");
   check(wideHeader.controlPressed === "true", "Wide mode must expose aria-pressed=true");
   check(
@@ -959,8 +959,8 @@ export default async (page, options = {}) => {
     "Wide mode must increase the central content width",
   );
   check(
-    wideHeader.controlBackground !== standardHeader.controlBackground || wideHeader.controlBoxShadow !== standardHeader.controlBoxShadow,
-    "Wide selection must have a visible selected-state treatment",
+    wideHeader.controlBackground === standardHeader.controlBackground && wideHeader.controlWeight >= 700 && wideHeader.controlWeight > standardHeader.controlWeight,
+    "Wide signals the selected state in type without changing the shared control surface",
   );
 
   await goto(mermaidRoute);
