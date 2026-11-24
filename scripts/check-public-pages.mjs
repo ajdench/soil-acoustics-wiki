@@ -87,31 +87,42 @@ async function checkHead(page, route) {
 
 async function checkFavicon(page) {
   const href = await page.locator('head link[rel~="icon"]').evaluate(link => link.href);
-  assert.equal(href, new URL("assets/soil-soundwave-favicon.svg", base).href);
-  for (const size of [16, 32]) {
-    const { margins, bars } = await page.evaluate(async ({ href, size }) => {
-      const image = new Image(size, size);
-      image.src = href;
-      await image.decode();
+  assert.equal(href, new URL("assets/soil-acoustics-waveform.png", base).href);
+  const samples = await page.evaluate(async href => {
+    const image = new Image();
+    image.src = href;
+    await image.decode();
+    const result = [];
+    let source = image;
+    // Halve progressively so narrow anti-aliased tips contribute to each smaller pixel.
+    for (let size = 2 ** Math.floor(Math.log2(image.naturalWidth)); size >= 16; size /= 2) {
       const canvas = document.createElement("canvas");
       canvas.width = canvas.height = size;
       const context = canvas.getContext("2d");
-      context.drawImage(image, 0, 0, size, size);
+      context.drawImage(source, 0, 0, size, size);
+      source = canvas;
+      if (size > 64) continue;
       const { data } = context.getImageData(0, 0, size, size);
-      // Halfway between the green background and the light waveform in the red channel.
-      const isInk = (x, y) => data[4 * (y * size + x)] > 149;
+      // Red exceeds 60 at roughly 5% cream coverage over the solid green background.
+      const isInk = (x, y) => data[4 * (y * size + x)] > 60;
       const axis = Array.from({ length: size }, (_, index) => index);
       const columns = axis.filter(x => axis.some(y => isInk(x, y)));
       const rows = axis.filter(y => axis.some(x => isInk(x, y)));
+      const margins = [columns[0], size - 1 - columns.at(-1), rows[0], size - 1 - rows.at(-1)];
       const middle = axis.map(x => isInk(x, size / 2));
-      return {
-        margins: [columns[0], size - 1 - columns.at(-1), rows[0], size - 1 - rows.at(-1)],
-        bars: middle.filter((ink, x) => ink && !middle[x - 1]).length,
-      };
-    }, { href, size });
-    assert.deepEqual(margins, Array(4).fill(size / 16), `Unequal or oversized favicon margins at ${size}px`);
-    if (size === 16) assert.equal(bars, 7, "Seven waveform bars must remain distinct at tab size");
+      const starts = axis.filter(x => middle[x] && !middle[x - 1]);
+      const peak = columns.find(x => isInk(x, rows[0]));
+      result.push({ size, margins, bars: starts.length, peak, peakBar: starts.filter(x => x <= peak).length });
+    }
+    return result;
+  }, href);
+  assert.deepEqual(samples.map(sample => sample.size), [64, 32, 16]);
+  for (const { size, margins } of samples) {
+    assert.deepEqual(margins, Array(4).fill(size / 16), `Incorrect waveform margins at ${size}px`);
   }
+  const large = samples[0];
+  assert.equal(large.bars, 8, "The reference waveform has eight separate bars");
+  assert(large.peakBar === 4 && large.peak < large.size / 2, "The fourth bar peaks left of centre");
 }
 
 async function checkSocialPreviews(page) {

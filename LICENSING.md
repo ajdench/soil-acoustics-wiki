@@ -6,11 +6,13 @@ The owner publishes the original research notes, analysis and editorial text for
 
 The link preview uses the Soil Acoustics Ltd logo. The company hosts the cream-on-green artwork on its own website and retains its rights to the mark. [Publisher’s logo](https://soilacoustics.com/wp-content/uploads/2025/04/Logo-Green-BG-scaled.jpg)
 
+The browser favicon uses the supplied crop of the eight bars at the right of the Soil Acoustics wordmark. [Publisher’s wordmark](https://soilacoustics.com/wp-content/uploads/2024/11/Logo-Natural-No-BG-e1732707867807-1024x388.png)
+
 Soil Acoustics Ltd and other publishers retain the rights they hold in their website content, product images, guides, recordings and publications. The public website review links to the publisher’s original pages. The five screenshots made during the review are retained in the local research archive. Citing a source does not confer permission to redistribute it. The [source register](docs/sources.md) identifies the material reviewed, and [the source policy](SOURCE_POLICY.md) governs retention, corrections and removal.
 
 ## Third-party software
 
-The wiki header and favicon use the seven-bar Soundwave glyph from Bootstrap Icons v1.13.1. This wiki supplies the green background and light fill. [Original SVG](https://github.com/twbs/icons/blob/ce0e49dd063243118a115f17ad1fe1fe7576d552/icons/soundwave.svg) · [MIT licence](LICENSES/bootstrap-icons-MIT.txt)
+The wiki header and navigation drawer use the seven-bar Soundwave glyph from Bootstrap Icons v1.13.1. This wiki supplies the green background and light fill. [Original SVG](https://github.com/twbs/icons/blob/ce0e49dd063243118a115f17ad1fe1fe7576d552/icons/soundwave.svg) · [MIT licence](LICENSES/bootstrap-icons-MIT.txt)
 
 Reusable Standard components carry the [upstream MIT notice](LICENSES/denchco-standard-MIT.txt). The rendered theme uses [Lucide and Feather-derived icons](LICENSES/lucide-icons.txt). The vendored design validator includes its [upstream Apache 2.0 licence](tools/design-md/upstream/LICENSE). Third-party dependencies and generated vendor bundles retain their own licences. The published website includes [software licence notices](https://ajdench.github.io/soil-acoustics-wiki/assets/third-party-notices.txt) and a [browser runtime inventory](https://ajdench.github.io/soil-acoustics-wiki/assets/vendor/runtime-sbom.json).
 
