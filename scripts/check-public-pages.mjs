@@ -85,6 +85,18 @@ async function checkHead(page, route) {
     new URL("llms.txt", canonical).href);
 }
 
+async function checkNavigationWaveform(page) {
+  const favicon = await page.locator('head link[rel~="icon"]').evaluate(link => link.href);
+  assert.equal(favicon, new URL("assets/soil-acoustics-waveform.png", base).href);
+  for (const selector of [".md-header .md-logo img", ".md-nav__title .md-logo img"]) {
+    assert.equal(await page.locator(selector).evaluate(image => image.src), favicon, selector);
+  }
+  const menu = page.locator('.md-header label[for="__drawer"]');
+  const artwork = menu.locator('svg.wiki-menu-waveform[aria-hidden="true"]');
+  assert.equal(await artwork.evaluate(icon => getComputedStyle(icon).backgroundImage), `url("${favicon}")`,
+    "The menu button must use the favicon on direct and instant navigation");
+}
+
 async function checkFavicon(page) {
   const href = await page.locator('head link[rel~="icon"]').evaluate(link => link.href);
   assert.equal(href, new URL("assets/soil-acoustics-waveform.png", base).href);
@@ -193,6 +205,16 @@ for (const [engine, browserType, width] of [["chromium", chromium, 1440], ["webk
     assert.equal(home?.status(), 200, base.href);
     await checkHead(page, "");
     await checkFavicon(page);
+    await checkNavigationWaveform(page);
+    if (width < 600) {
+      const menu = page.getByRole("button", { name: "Navigation", exact: true });
+      await menu.press("Enter");
+      await page.locator('.md-header [for="__drawer"][aria-expanded="true"]').waitFor();
+      await page.locator(".md-nav__title .md-logo img").waitFor();
+      await page.keyboard.press("Escape");
+      await page.locator('.md-header [for="__drawer"][aria-expanded="false"]').waitFor();
+      assert(await menu.evaluate(element => element === document.activeElement), "Closing the drawer returns focus to its button");
+    }
     await page.locator('article a[href*="monitoring-systems"]').first().click();
     await page.waitForURL(new URL("monitoring-systems/", base).href);
     // Instant navigation updates the address before replacing the article and its metadata.
@@ -209,6 +231,7 @@ for (const [engine, browserType, width] of [["chromium", chromium, 1440], ["webk
     const sourceRow = page.locator("tr").filter({ has: page.locator(target.hash) });
     await sourceRow.locator('a[href^="https://"]').first().waitFor();
     await checkHead(page, "sources/");
+    await checkNavigationWaveform(page);
 
     await page.goto(new URL("website-review/", base).href);
     await checkHead(page, "website-review/");

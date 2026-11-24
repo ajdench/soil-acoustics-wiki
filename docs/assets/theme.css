@@ -155,6 +155,10 @@ body[data-md-color-accent] {
   transform: translate(-50%, -50%);
 }
 
+.wiki-menu-waveform {
+  background: url("soil-acoustics-waveform.png") center / contain no-repeat;
+}
+
 [dir="rtl"] .md-header__button:not(.md-logo)[for="__search"] > svg {
   transform: translate(-50%, -50%) scaleX(-1);
 }

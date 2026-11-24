@@ -64,7 +64,7 @@ The theme switch, Wide and Search share the same top and bottom edges, 1px perim
 
 ## Reader components
 
-The browser favicon centres the supplied eight tapered cream bars on green, with the tallest bar fourth from the left. At a tab size of 16 × 16 pixels, the waveform fits inside a 14 × 14 pixel square. The header and navigation drawer use the Bootstrap Soundwave glyph. [Bootstrap Icons Soundwave](https://icons.getbootstrap.com/icons/soundwave/)
+The browser tab, desktop header, mobile menu button and open navigation drawer all use the same waveform image. It centres eight tapered cream bars on green, with the tallest bar fourth from the left. At a tab size of 16 × 16 pixels, the waveform fits inside a 14 × 14 pixel square.
 
 Shared links display the publisher’s cream Soil Acoustics logo centred on a solid green background. The page title appears in the card caption. Set the default title and image in `project.extra.link_preview`. A page can supply its own `social_title` or `social_image`. Each image record declares its dimensions, media type and alt text, with either a project-relative `path` or an absolute HTTPS `url`.
 
