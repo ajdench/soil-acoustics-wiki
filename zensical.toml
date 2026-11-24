@@ -36,11 +36,11 @@ nav = [
 home_title = "What can soil sounds tell us?"
 
 [project.extra.link_preview.image]
-path = "assets/social/soil-acoustics-preview.jpg"
-width = 1200
-height = 630
+url = "https://soilacoustics.com/wp-content/uploads/2025/04/Logo-Green-BG-scaled.jpg"
+width = 2560
+height = 1359
 type = "image/jpeg"
-alt = "A soil probe in a cutaway of topsoil, with a cream sound wave above the surface."
+alt = "Soil Acoustics logo in cream on green, with a sound wave beside the word “soil”."
 
 [project.markdown_extensions]
 admonition = {}

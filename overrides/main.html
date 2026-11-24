@@ -8,7 +8,7 @@
     {% set title = page.meta.social_title or (social.home_title if home else page.meta.title or page.title) %}
     {% set description = page.meta.description or config.site_description %}
     {% set image = page.meta.social_image or social.image %}
-    {% set image_url = (config.site_url | trim('/')) ~ '/' ~ (image.path | trim('/')) %}
+    {% set image_url = image.url or ((config.site_url | trim('/')) ~ '/' ~ (image.path | trim('/'))) %}
     <meta property="og:site_name" content="{{ config.site_name | e }}">
     <meta property="og:title" content="{{ title | e }}">
     <meta property="og:type" content="{{ 'website' if home else 'article' }}">

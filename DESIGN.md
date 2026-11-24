@@ -66,7 +66,7 @@ The theme switch, Wide and Search share the same top and bottom edges, 1px perim
 
 The header, navigation drawer and favicon use the same Soundwave SVG. Its seven rounded bars remain distinct at 16 pixels. The light strokes and green background match the header palette. [Bootstrap Icons Soundwave](https://icons.getbootstrap.com/icons/soundwave/)
 
-Shared links use a 1200 × 630 illustration of a soil probe and a cream waveform. The artwork has no lettering. The caption and image description are supplied in the page’s Open Graph metadata so clients can display and announce them separately. Set the default caption and image in `project.extra.link_preview`. A page can use `social_title` or a `social_image` record with its own `path`, `alt`, `width`, `height` and `type`.
+Shared links display the publisher’s cream Soil Acoustics logo centred on a solid green background. The page title appears in the card caption. Set the default title and image in `project.extra.link_preview`. A page can supply its own `social_title` or `social_image`. Each image record declares its dimensions, media type and alt text, with either a project-relative `path` or an absolute HTTPS `url`.
 
 The current page and section use a soft green fill and bold type in both sidebars and the mobile menu. Keep the leading edge clear so active and inactive labels align. The label contrast is 6.50:1 in the light palette and 7.46:1 in the dark palette. Expose the current page and the current section to assistive technology. The section marker follows the renderer when the reader scrolls.
 

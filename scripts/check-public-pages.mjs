@@ -22,6 +22,7 @@ const base = baseUrl(positionals[0]);
 const canonical = baseUrl(values["canonical-url"] ?? base.href);
 const run = { endpoint: base.href, canonical: canonical.href, privateImages: [], browsers: [] };
 const privateImages = ["homepage", "shop-collection", "plan-comparison", "portal", "narrow-menu"];
+const publisherLogo = "https://soilacoustics.com/wp-content/uploads/2025/04/Logo-Green-BG-scaled.jpg";
 const publisherPages = [
   "https://soilacoustics.com/", "https://soilacoustics.com/buy-now/",
   "https://shop.soilacoustics.com/collections/frontpage", "https://portal.soilacoustics.com/login",
@@ -104,17 +105,27 @@ async function checkSocialPreviews(page) {
     assert(tags["og:title"]?.trim() && tags.description?.trim());
     assert.equal(tags["og:description"], tags.description);
     descriptions.add(tags.description);
-    const imagePath = projectPath(new URL(tags["og:image"]));
+    const imageUrl = new URL(tags["og:image"]);
+    const isProjectImage = imageUrl.href.startsWith(canonical.href);
+    assert(isProjectImage || imageUrl.protocol === "https:", `External preview image must use HTTPS on /${route}`);
+    assert(!imageUrl.username && !imageUrl.password && !imageUrl.hash);
+    assert(!imageUrl.pathname.endsWith("/soil-acoustics-preview.jpg"), `Obsolete illustration on /${route}`);
+    // Fetch project assets from the deployment under test and publisher assets from their declared origin.
+    const imageSource = isProjectImage ? imageUrl.href.slice(canonical.href.length) : imageUrl.href;
     const image = { type: tags["og:image:type"], width: Number(tags["og:image:width"]), height: Number(tags["og:image:height"]) };
     assert(tags["og:image:alt"]?.trim() && image.width > 0 && image.height > 0);
     if (!route) {
       assert.equal(tags["og:title"], "What can soil sounds tell us?");
-      assert.equal(imagePath, "assets/social/soil-acoustics-preview.jpg");
-      assert.deepEqual(image, { type: "image/jpeg", width: 1200, height: 630 });
+      assert.equal(imageUrl.href, publisherLogo);
+    }
+    if (imageUrl.href === publisherLogo) {
+      assert.deepEqual(image, { type: "image/jpeg", width: 2560, height: 1359 });
+      assert.match(tags["og:image:alt"], /soil acoustics/i);
+      assert.match(tags["og:image:alt"], /green/i);
     }
     if (route === "graph/two-dimensional/") assert.equal(tags["og:title"], "2D knowledge graph");
-    if (images.has(imagePath)) assert.deepEqual(image, images.get(imagePath));
-    images.set(imagePath, image);
+    if (images.has(imageSource)) assert.deepEqual(image, images.get(imageSource));
+    images.set(imageSource, image);
   }
   assert.equal(descriptions.size, sitemapPaths.length, "Each page needs its own preview description");
   for (const [path, image] of images) {
