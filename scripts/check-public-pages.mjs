@@ -85,6 +85,35 @@ async function checkHead(page, route) {
     new URL("llms.txt", canonical).href);
 }
 
+async function checkFavicon(page) {
+  const href = await page.locator('head link[rel~="icon"]').evaluate(link => link.href);
+  assert.equal(href, new URL("assets/soil-soundwave-favicon.svg", base).href);
+  for (const size of [16, 32]) {
+    const { margins, bars } = await page.evaluate(async ({ href, size }) => {
+      const image = new Image(size, size);
+      image.src = href;
+      await image.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = size;
+      const context = canvas.getContext("2d");
+      context.drawImage(image, 0, 0, size, size);
+      const { data } = context.getImageData(0, 0, size, size);
+      // Halfway between the green background and the light waveform in the red channel.
+      const isInk = (x, y) => data[4 * (y * size + x)] > 149;
+      const axis = Array.from({ length: size }, (_, index) => index);
+      const columns = axis.filter(x => axis.some(y => isInk(x, y)));
+      const rows = axis.filter(y => axis.some(x => isInk(x, y)));
+      const middle = axis.map(x => isInk(x, size / 2));
+      return {
+        margins: [columns[0], size - 1 - columns.at(-1), rows[0], size - 1 - rows.at(-1)],
+        bars: middle.filter((ink, x) => ink && !middle[x - 1]).length,
+      };
+    }, { href, size });
+    assert.deepEqual(margins, Array(4).fill(size / 16), `Unequal or oversized favicon margins at ${size}px`);
+    if (size === 16) assert.equal(bars, 7, "Seven waveform bars must remain distinct at tab size");
+  }
+}
+
 async function checkSocialPreviews(page) {
   const images = new Map();
   const descriptions = new Set();
@@ -152,6 +181,7 @@ for (const [engine, browserType, width] of [["chromium", chromium, 1440], ["webk
     const home = await page.goto(base.href);
     assert.equal(home?.status(), 200, base.href);
     await checkHead(page, "");
+    await checkFavicon(page);
     await page.locator('article a[href*="monitoring-systems"]').first().click();
     await page.waitForURL(new URL("monitoring-systems/", base).href);
     // Instant navigation updates the address before replacing the article and its metadata.

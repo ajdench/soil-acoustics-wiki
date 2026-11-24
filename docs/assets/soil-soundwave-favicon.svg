@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 16 16">
+  <title>Soil Acoustics wiki</title>
+  <!-- Soundwave, Bootstrap Icons v1.13.1. Copyright 2019-2024 The Bootstrap Authors. MIT licence. -->
+  <rect width="16" height="16" rx="3" fill="#32541c"/>
+  <g fill="#f7f9f5">
+    <rect x="1" y="6" width="1" height="4" rx=".5"/>
+    <rect x="3" y="5" width="1" height="6" rx=".5"/>
+    <rect x="5" y="3" width="1" height="10" rx=".5"/>
+    <rect x="7" y="1" width="2" height="14" rx="1"/>
+    <rect x="10" y="3" width="1" height="10" rx=".5"/>
+    <rect x="12" y="5" width="1" height="6" rx=".5"/>
+    <rect x="14" y="6" width="1" height="4" rx=".5"/>
+  </g>
+</svg>

@@ -64,7 +64,7 @@ The theme switch, Wide and Search share the same top and bottom edges, 1px perim
 
 ## Reader components
 
-The header, navigation drawer and favicon use the same Soundwave SVG. Its seven rounded bars remain distinct at 16 pixels. The light strokes and green background match the header palette. [Bootstrap Icons Soundwave](https://icons.getbootstrap.com/icons/soundwave/)
+The header, navigation drawer and favicon use the seven-bar Soundwave glyph in light strokes on green. At 16 × 16 pixels, the browser favicon centres the waveform in a 14 × 14 pixel square, with one pixel of green on each side. [Bootstrap Icons Soundwave](https://icons.getbootstrap.com/icons/soundwave/)
 
 Shared links display the publisher’s cream Soil Acoustics logo centred on a solid green background. The page title appears in the card caption. Set the default title and image in `project.extra.link_preview`. A page can supply its own `social_title` or `social_image`. Each image record declares its dimensions, media type and alt text, with either a project-relative `path` or an absolute HTTPS `url`.
 
