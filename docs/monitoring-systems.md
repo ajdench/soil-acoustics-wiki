@@ -1,3 +1,7 @@
+---
+description: "Compare soil acoustic systems by what they record, what they cost and what field evidence supports their claims."
+---
+
 # Comparing soil acoustic monitoring systems
 
 A farmer who wants a score after walking a field can buy Soil Acoustics’ meter and analysis service. A team that wants recordings for its own analysis can buy equipment from Elekon or Frontier Labs. Biofonic is testing a sensor that stays in one place for weeks. The cost comparison depends on whether the team needs equipment, interpretation or access to a trial. [SRC-015](sources.md#src-015), [SRC-029](sources.md#src-029), [SRC-041](sources.md#src-041), [SRC-027](sources.md#src-027), [SRC-028](sources.md#src-028)

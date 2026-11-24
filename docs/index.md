@@ -1,3 +1,7 @@
+---
+description: "Meet the company behind the Soil Acoustic Meter, explore the field evidence and compare ways to listen for life underground."
+---
+
 # Soil Acoustics
 
 <p class="review-date">Evidence reviewed 22 November 2026</p>

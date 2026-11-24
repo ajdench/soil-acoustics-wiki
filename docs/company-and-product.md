@@ -1,3 +1,7 @@
+---
+description: "Trace the Soil Acoustic Meter from a funded research project to a commercial service. Explore the meter, subscription prices and data rights."
+---
+
 # The company and its product
 
 Soil Acoustics Ltd sells a handheld recorder and a subscription to analyse its recordings. A farmer can use the Soil Acoustic Meter (SAM) to revisit the same patch of ground and compare how it sounds over time. The company grew out of work by Baker Consultants and the University of Warwick on a more practical way to survey soil animals. [SRC-002](sources.md#src-002), [SRC-007](sources.md#src-007), [SRC-049](sources.md#src-049)

@@ -1,3 +1,7 @@
+---
+description: "Compare the supplier’s website and field guide on sampling distances, recording times and when results become available."
+---
+
 # Website and field guide review
 
 A visitor can hear underground activity on the homepage and follow the field guide’s diagrams from probe placement to upload. The harder question is what to do with the next reading. The website and guide give different instructions for taking a sample, and neither shows how a farmer might interpret a change in score. [SRC-001](sources.md#src-001), [SRC-002](sources.md#src-002), [SRC-003](sources.md#src-003)

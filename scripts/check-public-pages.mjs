@@ -84,10 +84,59 @@ async function checkHead(page, route) {
     new URL("llms.txt", canonical).href);
 }
 
+async function checkSocialPreviews(page) {
+  const images = new Map();
+  const descriptions = new Set();
+  for (const route of sitemapPaths) {
+    // A crawler uses the initial HTML response before the wiki runs any scripts.
+    const html = await (await get(route)).text();
+    const entries = await page.evaluate(raw => {
+      const { head } = new DOMParser().parseFromString(raw, "text/html");
+      return [...head.querySelectorAll('meta[property^="og:"], meta[name="twitter:card"], meta[name="description"]')]
+        .map(tag => [tag.getAttribute("property") || tag.name, tag.content]);
+    }, html);
+    const tags = Object.fromEntries(entries);
+    assert.equal(Object.keys(tags).length, entries.length, `Duplicate preview metadata on /${route}`);
+    assert.equal(tags["og:url"], new URL(route, canonical).href);
+    assert.equal(tags["og:type"], route ? "article" : "website");
+    assert.equal(tags["og:site_name"], "Soil Acoustics");
+    assert.equal(tags["twitter:card"], "summary_large_image");
+    assert(tags["og:title"]?.trim() && tags.description?.trim());
+    assert.equal(tags["og:description"], tags.description);
+    descriptions.add(tags.description);
+    const imagePath = projectPath(new URL(tags["og:image"]));
+    const image = { type: tags["og:image:type"], width: Number(tags["og:image:width"]), height: Number(tags["og:image:height"]) };
+    assert(tags["og:image:alt"]?.trim() && image.width > 0 && image.height > 0);
+    if (!route) {
+      assert.equal(tags["og:title"], "What can soil sounds tell us?");
+      assert.equal(imagePath, "assets/social/soil-acoustics-preview.jpg");
+      assert.deepEqual(image, { type: "image/jpeg", width: 1200, height: 630 });
+    }
+    if (route === "graph/two-dimensional/") assert.equal(tags["og:title"], "2D knowledge graph");
+    if (images.has(imagePath)) assert.deepEqual(image, images.get(imagePath));
+    images.set(imagePath, image);
+  }
+  assert.equal(descriptions.size, sitemapPaths.length, "Each page needs its own preview description");
+  for (const [path, image] of images) {
+    const response = await get(path);
+    assert.equal(response.headers.get("content-type")?.split(";")[0], image.type);
+    const data = Buffer.from(await response.arrayBuffer()).toString("base64");
+    const dimensions = await page.evaluate(async uri => {
+      const picture = new Image();
+      picture.src = uri;
+      await picture.decode();
+      return [picture.naturalWidth, picture.naturalHeight];
+    }, `data:${image.type};base64,${data}`);
+    assert.deepEqual(dimensions, [image.width, image.height], path);
+  }
+  run.socialPreviews = { pages: sitemapPaths.length, images: [...images.keys()] };
+}
+
 for (const [engine, browserType, width] of [["chromium", chromium, 1440], ["webkit", webkit, 390]]) {
   const browser = await browserType.launch();
   try {
     const page = await browser.newPage({ viewport: { width, height: 900 }, isMobile: width < 600, hasTouch: width < 600 });
+    if (engine === "chromium") await checkSocialPreviews(page);
     page.setDefaultTimeout(30_000);
     const home = await page.goto(base.href);
     assert.equal(home?.status(), 200, base.href);

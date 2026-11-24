@@ -1,3 +1,7 @@
+---
+description: "Explore what woodland studies and controlled experiments say about soil sounds, animal abundance and the limits of the commercial score."
+---
+
 # What soil sounds tell us
 
 A single earthworm can make many sounds. Researchers have found that busier recordings sometimes come from soil containing more animals. How many *kinds* of animal live there is harder to infer. The evidence for either conclusion depends on what researchers counted beside the probe. Overall soil health also includes physical and chemical properties that a recording alone cannot establish. [SRC-019](sources.md#src-019), [SRC-023](sources.md#src-023), [SRC-024](sources.md#src-024), [SRC-044](sources.md#src-044), [SRC-045](sources.md#src-045)

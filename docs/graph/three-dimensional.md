@@ -1,4 +1,5 @@
 ---
+description: "Explore connections between the wiki’s records in three dimensions and inspect the sources behind each relationship."
 type: Graph
 title: 3D knowledge graph
 status: draft

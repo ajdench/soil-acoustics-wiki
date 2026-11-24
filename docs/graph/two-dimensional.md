@@ -1,4 +1,5 @@
 ---
+description: "Explore the wiki’s records in a searchable two-dimensional graph and follow links between concepts, claims and sources."
 type: Graph
 title: 2D knowledge graph
 status: draft

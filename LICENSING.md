@@ -4,6 +4,8 @@ The owner publishes the original research notes, analysis and editorial text for
 
 ## Sources and review evidence
 
+The wiki’s link-preview illustration was generated for this project with OpenAI ImageGen. It depicts a generic acoustic probe and an illustrative waveform. [Preview artwork](docs/assets/social/soil-acoustics-preview.jpg)
+
 Soil Acoustics Ltd and other publishers retain the rights they hold in their website content, product images, guides, recordings and publications. The public website review links to the publisher’s original pages. The five screenshots made during the review are retained in the local research archive. Citing a source does not confer permission to redistribute it. The [source register](docs/sources.md) identifies the material reviewed, and [the source policy](SOURCE_POLICY.md) governs retention, corrections and removal.
 
 ## Third-party software

@@ -32,6 +32,16 @@ nav = [
   ]}
 ]
 
+[project.extra.link_preview]
+home_title = "What can soil sounds tell us?"
+
+[project.extra.link_preview.image]
+path = "assets/social/soil-acoustics-preview.jpg"
+width = 1200
+height = 630
+type = "image/jpeg"
+alt = "A soil probe in a cutaway of topsoil, with a cream sound wave above the surface."
+
 [project.markdown_extensions]
 admonition = {}
 attr_list = {}
